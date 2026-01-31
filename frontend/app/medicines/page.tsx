@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { Search, Filter, ShoppingCart, Star, ChevronRight, Loader2, Pill } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Pill, Search, Filter, ShoppingCart, Star, ArrowRight, Loader2 } from "lucide-react";
 
 interface Medicine {
     id: string;
@@ -11,167 +10,167 @@ interface Medicine {
     description: string;
     price: number;
     image: string;
+    stock: number;
     category: { name: string };
-    manufacturer: string;
+    seller: { name: string };
 }
 
 export default function MedicinesPage() {
     const [medicines, setMedicines] = useState<Medicine[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const searchParams = useSearchParams();
-    const categoryQuery = searchParams.get("category");
+    const [search, setSearch] = useState("");
+    const [categories, setCategories] = useState<any[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState("");
+
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend-v2-sb9v.vercel.app";
+
+    const fetchMedicines = async () => {
+        setLoading(true);
+        try {
+            const url = new URL(`${backendUrl}/api/medicines`);
+            if (search) url.searchParams.set("search", search);
+            if (selectedCategory) url.searchParams.set("category", selectedCategory);
+
+            const res = await fetch(url.toString());
+            const json = await res.json();
+            if (json.success) {
+                setMedicines(json.data.medicines);
+            }
+        } catch (e) {
+            console.error("Failed to fetch medicines", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch(`${backendUrl}/api/medicines/categories`);
+            const json = await res.json();
+            if (json.success) {
+                setCategories(json.data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch categories", e);
+        }
+    };
 
     useEffect(() => {
-        const fetchMedicines = async () => {
-            setLoading(true);
-            try {
-                console.log("Fetching medicines from:", "https://backend-v2-sb9v.vercel.app/api/medicines");
-                const res = await fetch("https://backend-v2-sb9v.vercel.app/api/medicines");
+        fetchCategories();
+    }, []);
 
-                if (!res.ok) {
-                    const text = await res.text();
-                    console.error("Response not OK:", res.status, text);
-                    setError(`Server responded with ${res.status}`);
-                    return;
-                }
-
-                const data = await res.json();
-                console.log("API Response:", data);
-
-                if (data.success) {
-                    let filtered = data.data.medicines;
-                    if (categoryQuery) {
-                        filtered = filtered.filter((m: Medicine) =>
-                            m.category?.name.toLowerCase() === categoryQuery.toLowerCase()
-                        );
-                    }
-                    setMedicines(filtered);
-                } else {
-                    setError(data.error || "Failed to load medicines");
-                }
-            } catch (err) {
-                console.error("Fetch encounter error:", err);
-                setError("Network error or CORS issue. Check browser console.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMedicines();
-    }, [categoryQuery]);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-sky-500 animate-spin mx-auto mb-4" />
-                    <p className="text-slate-500 font-bold animate-pulse italic">Bringing the pharmacy to you...</p>
-                </div>
-            </div>
-        );
-    }
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchMedicines();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search, selectedCategory]);
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] pt-24 pb-20">
+        <div className="min-h-screen bg-[#f8fafc] pt-28 pb-20">
             <div className="max-w-[1300px] mx-auto px-4 md:px-10">
-                {/* Header & Search */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-12">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                     <div className="space-y-2">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-sky-50 text-sky-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-                            <Pill className="w-3 h-3" />
-                            Premium Catalog
+                        <div className="flex items-center gap-2 text-sky-600 mb-1">
+                            <Link href="/" className="text-xs font-bold hover:underline">Home</Link>
+                            <ChevronRight className="w-3 h-3" />
+                            <span className="text-xs font-bold text-gray-400">Medicines</span>
                         </div>
-                        <h1 className="text-4xl font-black text-slate-900 italic">Our Medicines</h1>
-                        <p className="text-slate-400 text-sm font-medium">Browse thousands of authentic healthcare products</p>
+                        <h1 className="text-4xl font-black text-gray-900 italic">Available Medicines</h1>
+                        <p className="text-sm text-gray-500 font-medium">Browse thousands of authentic products</p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:max-w-xl">
-                        <div className="relative w-full group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
+                    <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                        <div className="relative group flex-1 sm:w-80">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-sky-500 transition-colors" />
                             <input
                                 type="text"
-                                placeholder="Search by name, generic or manufacturer..."
-                                className="w-full pl-12 pr-4 py-4 bg-white border-none rounded-2xl shadow-xl shadow-slate-200/50 focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-medium transition-all"
+                                placeholder="Search medicine..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3.5 bg-white shadow-xl shadow-sky-100/50 rounded-2xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-medium"
                             />
                         </div>
-                        <button className="flex items-center gap-2 px-6 py-4 bg-white border border-slate-100 rounded-2xl text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors shadow-sm">
-                            <Filter className="w-4 h-4" />
-                            Filters
-                        </button>
+                        <div className="relative">
+                            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="pl-10 pr-10 py-3.5 bg-white shadow-xl shadow-sky-100/50 rounded-2xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-bold appearance-none cursor-pointer text-gray-700 min-w-[160px]"
+                            >
+                                <option value="">All Categories</option>
+                                {categories.map(cat => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 {/* Grid */}
-                {error ? (
-                    <div className="bg-red-50 border border-red-100 rounded-[32px] p-12 text-center max-w-2xl mx-auto mt-20">
-                        <p className="text-red-500 font-bold mb-2">Oops! Something went wrong</p>
-                        <p className="text-red-400 text-sm">{error}</p>
-                        <button onClick={() => window.location.reload()} className="mt-6 px-8 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-200">
-                            Try Again
-                        </button>
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                        <Loader2 className="w-12 h-12 text-sky-500 animate-spin" />
+                        <p className="text-gray-400 font-bold italic animate-pulse">Filtering best results for you...</p>
                     </div>
-                ) : (
+                ) : medicines.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                         {medicines.map((med) => (
-                            <div key={med.id} className="group relative bg-white rounded-[32px] p-4 border border-slate-50 hover:shadow-2xl hover:shadow-sky-100 transition-all duration-500 hover:-translate-y-2">
-                                <Link href={`/medicines/${med.id}`} className="block relative aspect-square rounded-[24px] overflow-hidden mb-6 bg-slate-100">
-                                    <img
-                                        src={med.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400"}
-                                        alt={med.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                    />
+                            <div key={med.id} className="group bg-white rounded-[32px] p-4 border border-gray-50 shadow-sm hover:shadow-2xl hover:shadow-sky-100 transition-all duration-500 flex flex-col h-full hover:-translate-y-1">
+                                <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden mb-6 bg-gray-50 flex items-center justify-center">
+                                    {med.image ? (
+                                        <img src={med.image} alt={med.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    ) : (
+                                        <Pill className="w-16 h-16 text-sky-200" />
+                                    )}
                                     <div className="absolute top-4 left-4">
-                                        <div className="px-3 py-1 bg-white/90 backdrop-blur text-[10px] font-black text-sky-600 rounded-full shadow-sm uppercase">
-                                            {med.category?.name || "Medicine"}
-                                        </div>
+                                        <span className="px-3 py-1 bg-white/90 backdrop-blur text-[10px] font-black uppercase tracking-wider text-sky-600 rounded-full shadow-sm">
+                                            {med.category.name}
+                                        </span>
                                     </div>
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-slate-900 shadow-xl scale-75 group-hover:scale-100 transition-transform duration-300">
-                                            <ArrowRight className="w-6 h-6" />
-                                        </div>
-                                    </div>
-                                </Link>
+                                </div>
 
-                                <div className="space-y-3 px-2 pb-2">
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{med.manufacturer}</p>
-                                        <div className="flex items-center gap-1 text-yellow-500">
-                                            <Star className="w-3 h-3 fill-current" />
-                                            <span className="text-[10px] font-black text-slate-900">4.8</span>
-                                        </div>
-                                    </div>
-                                    <h3 className="font-black text-lg text-slate-900 tracking-tight leading-tight group-hover:text-sky-600 transition-colors line-clamp-1 italic">
+                                <div className="px-2 space-y-2 flex-grow">
+                                    <h3 className="font-black text-xl text-gray-900 group-hover:text-sky-600 transition-colors line-clamp-1 italic">
                                         {med.name}
                                     </h3>
-                                    <div className="flex items-end justify-between pt-2">
-                                        <div className="space-y-0.5">
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Price</p>
-                                            <p className="text-xl font-black text-slate-900">
-                                                <span className="text-sm font-bold mr-0.5">$</span>
-                                                {med.price.toFixed(2)}
-                                            </p>
-                                        </div>
-                                        <button className="p-3.5 bg-slate-900 text-white rounded-2xl hover:bg-sky-500 transition-all shadow-xl shadow-slate-100 hover:shadow-sky-200">
-                                            <ShoppingCart className="w-5 h-5" />
-                                        </button>
+                                    <p className="text-gray-400 text-xs font-medium line-clamp-2 leading-relaxed">
+                                        {med.description}
+                                    </p>
+                                    <div className="flex items-center gap-1 text-yellow-500 pt-1">
+                                        {[1, 2, 3, 4, 5].map(i => <Star key={i} className={`w-3 h-3 ${i <= 4 ? 'fill-current' : ''}`} />)}
+                                        <span className="text-[10px] text-gray-400 font-bold ml-1">(12+ reviews)</span>
                                     </div>
+                                </div>
+
+                                <div className="mt-6 pt-6 border-t border-gray-50 flex items-center justify-between px-2">
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Price</p>
+                                        <p className="text-2xl font-black text-gray-900 italic">
+                                            ${med.price.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <button className="w-12 h-12 bg-gray-900 text-white rounded-2xl flex items-center justify-center shadow-lg hover:bg-sky-600 hover:scale-110 transition-all active:scale-95 group/btn">
+                                        <ShoppingCart className="w-5 h-5 group-hover/btn:animate-bounce" />
+                                    </button>
                                 </div>
                             </div>
                         ))}
                     </div>
-                )}
-
-                {!loading && medicines.length === 0 && !error && (
-                    <div className="text-center py-40">
-                        <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                            <Pill className="w-10 h-10 text-slate-300" />
+                ) : (
+                    <div className="bg-white rounded-[40px] py-32 text-center border-2 border-dashed border-gray-100">
+                        <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <Search className="w-10 h-10 text-gray-200" />
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900 italic">No medicines found</h3>
-                        <p className="text-slate-400 text-sm mt-2 max-w-sm mx-auto">We couldn't find any products in our catalog right now. Please check back later.</p>
-                        <Link href="/" className="mt-8 inline-flex items-center gap-2 px-8 py-3 bg-white border border-slate-100 rounded-xl font-bold text-slate-600 hover:bg-slate-50 transition-colors shadow-sm">
-                            Return Home
-                        </Link>
+                        <h3 className="text-2xl font-black text-gray-900 italic">Oops! No results found</h3>
+                        <p className="text-gray-400 mt-2 font-medium">Try searching for something else or change filters</p>
+                        <button
+                            onClick={() => { setSearch(""); setSelectedCategory(""); }}
+                            className="mt-8 px-8 py-3 bg-sky-50 text-sky-600 rounded-full font-bold hover:bg-sky-100 transition-all"
+                        >
+                            Reset All Filters
+                        </button>
                     </div>
                 )}
             </div>
