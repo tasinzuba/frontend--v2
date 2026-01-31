@@ -144,7 +144,7 @@ export default function Home() {
               { name: "Personal Care", count: "400+ Products", img: "https://images.unsplash.com/photo-1556228515-ce1a910724c6?q=80&w=400", color: "purple" },
               { name: "Baby Care", count: "80+ Products", img: "https://images.unsplash.com/photo-1515488484392-4db23ff4f05c?q=80&w=400", color: "orange" },
             ].map((cat, idx) => (
-              <Link key={idx} href={`/categories/${cat.name.toLowerCase()}`} className="group relative bg-white rounded-[32px] p-4 border border-gray-100 hover:shadow-2xl hover:shadow-sky-100 transition-all duration-500 hover:-translate-y-2">
+              <Link key={idx} href={`/medicines?category=${cat.name}`} className="group relative bg-white rounded-[32px] p-4 border border-gray-100 hover:shadow-2xl hover:shadow-sky-100 transition-all duration-500 hover:-translate-y-2">
                 <div className="relative aspect-square rounded-[24px] overflow-hidden mb-6">
                   <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
