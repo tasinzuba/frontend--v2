@@ -20,7 +20,8 @@ export default function CategoriesPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const res = await fetch("https://backend-v2-sb9v.vercel.app/api/medicines/categories");
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend-v2-sb9v.vercel.app";
+                const res = await fetch(`${backendUrl}/api/medicines/categories`, { credentials: "include" });
                 const data = await res.json();
                 if (data.success) {
                     setCategories(data.data);
@@ -49,61 +50,62 @@ export default function CategoriesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] pt-24 pb-20">
+        <div className="min-h-screen bg-[#f8fafc] pt-28 pb-20 animate-slide-up">
             <div className="max-w-[1300px] mx-auto px-4 md:px-10">
                 {/* Header */}
-                <div className="text-center space-y-4 mb-20">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest mx-auto">
-                        <LayoutGrid className="w-3 h-3" />
-                        Our Taxonomy
+                <div className="text-center space-y-4 mb-24">
+                    <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest mx-auto border border-emerald-100/50 shadow-sm">
+                        <LayoutGrid className="w-3.5 h-3.5" />
+                        Explore Our Taxonomy
                     </div>
-                    <h1 className="text-5xl font-black text-slate-900 italic tracking-tight">Product Categories</h1>
-                    <p className="text-slate-400 text-sm font-medium max-w-lg mx-auto leading-relaxed">
-                        Find exactly what you need by browsing our specialized healthcare departments and product groups.
+                    <h1 className="text-6xl font-bold text-slate-900 tracking-tight">Product <span className="text-emerald-600">Categories</span></h1>
+                    <p className="text-slate-500 font-medium max-w-xl mx-auto leading-relaxed">
+                        Find exactly what you need by browsing our specialized healthcare departments and trusted pharmaceutical product groups.
                     </p>
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
                     {categories.map((cat) => (
                         <Link
                             key={cat.id}
-                            href={`/medicines?category=${cat.name}`}
-                            className="group relative bg-white rounded-[40px] p-6 border border-slate-50 hover:shadow-2xl hover:shadow-emerald-100 transition-all duration-500 hover:-translate-y-2 text-center"
+                            href={`/medicines?category=${cat.id}`}
+                            className="group relative bg-white rounded-[40px] p-8 border border-slate-50 hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 text-center"
                         >
-                            <div className="relative w-32 h-32 mx-auto mb-8 rounded-[32px] overflow-hidden shadow-xl shadow-slate-100 group-hover:scale-110 transition-transform duration-500">
+                            <div className="relative w-36 h-36 mx-auto mb-10 rounded-[32px] overflow-hidden shadow-inner group-hover:scale-105 transition-transform duration-1000 bg-slate-50">
                                 <img
                                     src={cat.image || "https://images.unsplash.com/photo-1576602976047-174e57a47881?q=80&w=400"}
                                     alt={cat.name}
                                     className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-emerald-500/10 group-hover:bg-transparent transition-colors"></div>
                             </div>
 
-                            <h3 className="font-black text-2xl text-slate-900 italic mb-2 tracking-tight group-hover:text-emerald-600 transition-colors">
+                            <h3 className="font-bold text-2xl text-slate-900 mb-3 tracking-tight group-hover:text-emerald-600 transition-colors">
                                 {cat.name}
                             </h3>
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-6">
-                                {cat._count?.medicines || 0} Products
-                            </p>
-                            <p className="text-slate-500 text-sm line-clamp-2 px-4 h-10 mb-6">
+                            <div className="inline-block px-4 py-1 bg-slate-50 rounded-lg mb-6 border border-slate-100/50">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widestAlpha">
+                                    {cat._count?.medicines || 0} Products
+                                </p>
+                            </div>
+                            <p className="text-slate-500 text-sm font-medium line-clamp-2 px-2 h-10 mb-8 leading-relaxed">
                                 {cat.description || "High quality products carefully selected for your health and wellbeing."}
                             </p>
 
-                            <div className="inline-flex items-center gap-2 text-xs font-black text-emerald-600 uppercase tracking-widest group-hover:gap-4 transition-all">
-                                Explore <ArrowRight className="w-4 h-4" />
+                            <div className="inline-flex items-center gap-3 text-xs font-bold text-emerald-600 uppercase tracking-widest group-hover:gap-5 transition-all">
+                                Explore Store <ArrowRight className="w-4 h-4" />
                             </div>
-
-                            {/* Decorative background element */}
-                            <div className="absolute top-0 right-0 -z-10 w-24 h-24 bg-gradient-to-br from-emerald-50 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         </Link>
                     ))}
                 </div>
 
                 {categories.length === 0 && (
-                    <div className="text-center py-40 border-2 border-dashed border-slate-100 rounded-[50px]">
-                        <h3 className="text-2xl font-black text-slate-900 italic opacity-50">Coming Soon</h3>
-                        <p className="text-slate-400 text-sm mt-2">We are currently organizing our product catalog.</p>
+                    <div className="text-center py-40 bg-white rounded-[60px] border-2 border-dashed border-slate-100">
+                        <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+                            <LayoutGrid className="w-10 h-10 text-slate-200" />
+                        </div>
+                        <h3 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Catalog Under Construction</h3>
+                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">We are currently organizing our healthcare departments.</p>
                     </div>
                 )}
             </div>
