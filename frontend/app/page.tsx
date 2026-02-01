@@ -273,7 +273,7 @@ export default function Home() {
                     <TrendingUp className="w-7 h-7" />
                   </div>
                   <div>
-                    <p className="text-3xl font-bold text-slate-900">98%</p>
+                    <p className="text-3xl font-bold text-slate-900">99%</p>
                     <p className="text-sm text-slate-500">Customer Satisfaction</p>
                   </div>
                 </div>
