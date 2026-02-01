@@ -30,7 +30,7 @@ export default function Register() {
                 role,
                 phone,
                 callbackURL: "/",
-            }, {
+            } as any, {
                 onResponse: () => setLoading(false),
                 onError: (ctx) => setError(ctx.error.message || "Registration failed."),
                 onSuccess: () => router.push("/login?message=Account created! Check email.")
