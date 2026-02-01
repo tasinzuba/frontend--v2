@@ -107,7 +107,7 @@ export default function MedicineDetailPage() {
             <div className="max-w-[1300px] mx-auto px-4 md:px-10">
                 <Link
                     href="/medicines"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-500 rounded-2xl text-[10px] font-bold uppercase tracking-widest mb-12 hover:text-sky-600 transition-all shadow-sm border border-slate-100/50 group"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-slate-500 rounded-xl text-sm font-medium mb-10 hover:text-sky-600 transition-all shadow-sm border border-slate-100 group"
                 >
                     <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                     Back to Catalog
@@ -142,8 +142,8 @@ export default function MedicineDetailPage() {
                                     <Truck className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Delivery</p>
-                                    <p className="text-sm font-bold text-slate-800 tracking-tight">Express 24h</p>
+                                    <p className="text-xs text-slate-400">Delivery</p>
+                                    <p className="text-sm font-semibold text-slate-800">Express 24h</p>
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-[32px] border border-slate-50 shadow-sm flex items-center gap-5 group">
@@ -151,8 +151,8 @@ export default function MedicineDetailPage() {
                                     <ShieldCheck className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quality</p>
-                                    <p className="text-sm font-bold text-slate-800 tracking-tight">Certified Safe</p>
+                                    <p className="text-xs text-slate-400">Quality</p>
+                                    <p className="text-sm font-semibold text-slate-800">Certified Safe</p>
                                 </div>
                             </div>
                         </div>
@@ -162,12 +162,16 @@ export default function MedicineDetailPage() {
                     <div className="space-y-10">
                         <div className="space-y-6">
                             <div className="flex items-center gap-3">
-                                <span className="px-4 py-1.5 bg-sky-50 text-sky-600 text-[10px] font-bold rounded-lg uppercase tracking-widest border border-sky-100/50">
+                                <span className="px-3 py-1.5 bg-sky-50 text-sky-600 text-xs font-medium rounded-lg border border-sky-100">
                                     {medicine.category.name}
                                 </span>
-                                <div className="flex items-center gap-1.5 text-yellow-400 bg-yellow-50/50 px-3 py-1.5 rounded-lg border border-yellow-100/50">
+                                <div className="flex items-center gap-1.5 text-amber-500 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100">
                                     <Star className="w-3.5 h-3.5 fill-current" />
-                                    <span className="text-[10px] text-yellow-700 font-bold uppercase tracking-widest">4.8 Rating</span>
+                                    <span className="text-xs text-amber-700 font-medium">
+                                        {medicine.reviews?.length > 0
+                                            ? (medicine.reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / medicine.reviews.length).toFixed(1)
+                                            : "5.0"} Rating
+                                    </span>
                                 </div>
                             </div>
                             <h1 className="text-6xl font-bold text-slate-900 tracking-tight leading-tight">{medicine.name}</h1>
@@ -185,15 +189,15 @@ export default function MedicineDetailPage() {
                         <div className="flex flex-col sm:flex-row items-center gap-6 pt-6 border-t border-slate-100">
                             <button
                                 onClick={() => addToCart(medicine)}
-                                className="w-full h-16 bg-slate-900 text-white rounded-[24px] font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-sky-600 hover:shadow-xl transition-all shadow-lg flex items-center justify-center gap-4 active:scale-95 group"
+                                className="w-full h-14 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-2xl font-semibold text-sm hover:shadow-xl hover:shadow-sky-500/20 transition-all flex items-center justify-center gap-3 active:scale-95"
                             >
-                                <ShoppingCart className="w-6 h-6" />
-                                Buy Now
+                                <ShoppingCart className="w-5 h-5" />
+                                Add to Cart
                             </button>
-                            <div className="flex flex-col items-center sm:items-start flex-shrink-0 bg-slate-50 px-8 py-3 rounded-2xl border border-slate-100">
-                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Availability</p>
-                                <p className={`text-sm font-bold tracking-tight ${medicine.stock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                                    {medicine.stock > 0 ? `${medicine.stock} Units in Hub` : 'Out of Inventory'}
+                            <div className="flex flex-col items-center sm:items-start flex-shrink-0 bg-slate-50 px-6 py-3 rounded-xl border border-slate-100">
+                                <p className="text-xs text-slate-400">Availability</p>
+                                <p className={`text-sm font-semibold ${medicine.stock > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                    {medicine.stock > 0 ? `${medicine.stock} in stock` : 'Out of stock'}
                                 </p>
                             </div>
                         </div>
@@ -201,7 +205,7 @@ export default function MedicineDetailPage() {
                         <div className="bg-slate-50 rounded-[40px] p-8 border border-slate-100 space-y-8">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Verified Provider</p>
+                                    <p className="text-xs text-slate-400">Sold by</p>
                                     <p className="text-xl font-bold text-slate-900 tracking-tight">{medicine.seller.name}</p>
                                 </div>
                                 <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-sky-600 shadow-sm border border-white">
@@ -210,16 +214,16 @@ export default function MedicineDetailPage() {
                             </div>
                             <div className="grid grid-cols-3 gap-6 pt-6 border-t border-slate-200/50">
                                 <div>
-                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-1">Batch ID</p>
-                                    <p className="text-xs font-bold text-slate-800">#MED-{medicine.id.slice(-6).toUpperCase()}</p>
+                                    <p className="text-xs text-slate-400 mb-0.5">SKU</p>
+                                    <p className="text-xs font-medium text-slate-700">#MED-{medicine.id.slice(-6).toUpperCase()}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-1">Purity</p>
-                                    <p className="text-xs font-bold text-slate-800">99.9% Cert</p>
+                                    <p className="text-xs text-slate-400 mb-0.5">Purity</p>
+                                    <p className="text-xs font-medium text-slate-700">99.9%</p>
                                 </div>
                                 <div>
-                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em] mb-1">Exp Date</p>
-                                    <p className="text-xs font-bold text-slate-800">Dec 2026</p>
+                                    <p className="text-xs text-slate-400 mb-0.5">Expires</p>
+                                    <p className="text-xs font-medium text-slate-700">Dec 2026</p>
                                 </div>
                             </div>
                         </div>
@@ -232,8 +236,8 @@ export default function MedicineDetailPage() {
                         {/* Review List */}
                         <div className="lg:col-span-2 space-y-12">
                             <div className="space-y-2">
-                                <p className="text-[10px] font-bold text-sky-600 uppercase tracking-[0.3em]">Patient Feedback</p>
-                                <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Clinical Reviews</h2>
+                                <p className="text-sm text-sky-600 font-medium">Customer Feedback</p>
+                                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Reviews</h2>
                             </div>
 
                             {medicine.reviews?.length > 0 ? (
@@ -246,8 +250,8 @@ export default function MedicineDetailPage() {
                                                         {rev.customer.name.charAt(0)}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-bold text-slate-900">{rev.customer.name}</p>
-                                                        <p className="text-[10px] text-slate-400 font-bold uppercase">{new Date(rev.createdAt).toLocaleDateString()}</p>
+                                                        <p className="text-sm font-medium text-slate-900">{rev.customer.name}</p>
+                                                        <p className="text-xs text-slate-400">{new Date(rev.createdAt).toLocaleDateString()}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-1">
@@ -261,22 +265,22 @@ export default function MedicineDetailPage() {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="p-20 bg-slate-50 rounded-[40px] text-center border border-dashed border-slate-200">
-                                    <MessageSquare className="w-12 h-12 text-slate-200 mx-auto mb-6" />
-                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">No reviews recorded yet</p>
+                                <div className="p-16 bg-slate-50 rounded-3xl text-center border border-dashed border-slate-200">
+                                    <MessageSquare className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                                    <p className="text-slate-400 text-sm">No reviews yet. Be the first to review!</p>
                                 </div>
                             )}
                         </div>
 
                         {/* Leave a Review */}
                         <div className="lg:col-span-1">
-                            <div className="bg-slate-900 rounded-[40px] p-10 text-white sticky top-32 shadow-2xl">
-                                <h3 className="text-2xl font-bold tracking-tight mb-2">Submit Experience</h3>
-                                <p className="text-slate-400 text-sm mb-10">Share your pharmaceutical experience with the community.</p>
+                            <div className="bg-slate-900 rounded-3xl p-8 text-white sticky top-32 shadow-xl">
+                                <h3 className="text-xl font-bold mb-2">Write a Review</h3>
+                                <p className="text-slate-400 text-sm mb-8">Share your experience with this product.</p>
 
                                 <form onSubmit={handleReviewSubmit} className="space-y-6">
-                                    <div className="space-y-3">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Efficiency Rating</p>
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-slate-400">Your Rating</p>
                                         <div className="flex items-center gap-2">
                                             {[1, 2, 3, 4, 5].map((s) => (
                                                 <button
@@ -291,8 +295,8 @@ export default function MedicineDetailPage() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-3">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Observations</p>
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-slate-400">Your Review</p>
                                         <textarea
                                             value={comment}
                                             onChange={(e) => setComment(e.target.value)}
@@ -305,10 +309,10 @@ export default function MedicineDetailPage() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-4 bg-sky-600 hover:bg-sky-500 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
+                                        className="w-full py-3.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
                                     >
                                         {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                        Broadcast Review
+                                        Submit Review
                                     </button>
                                 </form>
                             </div>
@@ -319,13 +323,13 @@ export default function MedicineDetailPage() {
                 {/* Related Products */}
                 {relatedMedicines.length > 0 && (
                     <div className="mt-32 border-t border-slate-100 pt-20">
-                        <div className="flex items-center justify-between mb-16 px-4">
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.3em]">Similar Assets</p>
-                                <h2 className="text-4xl font-bold text-slate-900 tracking-tight">People Also Viewed</h2>
+                        <div className="flex items-center justify-between mb-12">
+                            <div>
+                                <p className="text-sm text-emerald-600 font-medium mb-1">Similar Products</p>
+                                <h2 className="text-2xl font-bold text-slate-900">You May Also Like</h2>
                             </div>
-                            <Link href="/medicines" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-sky-600 transition-colors flex items-center gap-2">
-                                View Catalog <ArrowRight className="w-4 h-4" />
+                            <Link href="/medicines" className="text-sm text-slate-500 hover:text-sky-600 transition-colors flex items-center gap-1">
+                                View All <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
 

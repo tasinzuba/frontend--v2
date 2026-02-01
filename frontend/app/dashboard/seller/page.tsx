@@ -18,15 +18,28 @@ import {
     ChevronRight,
     Loader2,
     Calendar,
-    Pill,
-    X,
-    Filter,
+    ArrowUpRight,
     DollarSign,
     Box,
     User,
+    LogOut,
+    Menu,
+    X,
+    Filter,
+    MoreVertical,
+    Pill,
     ShoppingCart,
-    MapPin
+    MapPin,
+    TrendingUp,
+    Activity,
+    Zap,
+    BarChart3,
+    Eye,
+    AlertTriangle,
+    Store,
+    Settings
 } from "lucide-react";
+import ImageUpload from "@/app/components/ImageUpload";
 import Link from "next/link";
 
 interface Category {
@@ -222,10 +235,29 @@ export default function SellerDashboard() {
         setIsModalOpen(true);
     };
 
+    const handleLogout = async () => {
+        await authClient.signOut({
+            fetchOptions: {
+                onSuccess: () => {
+                    router.push("/login");
+                    router.refresh();
+                }
+            }
+        });
+    };
+
     if (authPending || !session) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-                <Loader2 className="w-10 h-10 animate-spin text-sky-500" />
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900">
+                <div className="text-center space-y-6">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl flex items-center justify-center animate-pulse">
+                        <Store className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="space-y-2">
+                        <Loader2 className="w-6 h-6 animate-spin text-emerald-400 mx-auto" />
+                        <p className="text-slate-400 text-sm font-medium">Loading seller portal...</p>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -238,29 +270,116 @@ export default function SellerDashboard() {
         return acc;
     }, 0);
 
-    return (
-        <div className="min-h-screen bg-[#f8fafc] pt-28 pb-20 animate-slide-up">
-            <div className="max-w-[1400px] mx-auto px-4 md:px-10">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 px-4 py-1.5 bg-sky-50 text-sky-600 rounded-full text-[10px] font-bold uppercase tracking-widest w-fit border border-sky-100/50">
-                            Enterprise Mode
-                        </div>
-                        <h1 className="text-5xl font-bold text-slate-900 tracking-tight">Seller <span className="text-sky-600">Dashboard</span></h1>
-                        <p className="text-slate-500 font-medium">Coordinate your pharmaceutical inventory and track commercial performance.</p>
-                    </div>
+    const pendingOrders = orders.filter(o => o.status === "PENDING" || o.status === "PROCESSING").length;
+    const shippedOrders = orders.filter(o => o.status === "SHIPPED").length;
+    const deliveredOrders = orders.filter(o => o.status === "DELIVERED").length;
+    const lowStockItems = medicines.filter(m => m.stock < 10).length;
+    const totalInventoryValue = medicines.reduce((sum, m) => sum + (m.price * m.stock), 0);
 
-                    <div className="flex items-center p-1 bg-white rounded-2xl shadow-sm border border-slate-100">
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "DELIVERED": return "bg-emerald-500/10 text-emerald-600 border-emerald-200";
+            case "SHIPPED": return "bg-blue-500/10 text-blue-600 border-blue-200";
+            case "PROCESSING": return "bg-amber-500/10 text-amber-600 border-amber-200";
+            case "CANCELLED": return "bg-red-500/10 text-red-600 border-red-200";
+            case "PENDING": return "bg-slate-500/10 text-slate-600 border-slate-200";
+            default: return "bg-slate-100 text-slate-600 border-slate-200";
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+            {/* Sidebar */}
+            <div className="fixed left-0 top-0 h-screen w-72 bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 pt-24 pb-8 px-6 hidden lg:flex flex-col z-40">
+                <div className="mb-12">
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                            <Store className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-white font-bold text-lg tracking-tight">Seller Hub</h2>
+                            <p className="text-emerald-300/60 text-[10px] font-bold uppercase tracking-widest">Commerce Portal</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Profile Card */}
+                <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 mb-8 border border-white/10">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-400 flex items-center justify-center overflow-hidden">
+                            {session.user.image ? (
+                                <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <User className="w-6 h-6 text-white" />
+                            )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-white truncate">{session.user.name}</p>
+                            <p className="text-emerald-300/60 text-xs truncate">{session.user.email}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <nav className="space-y-2 flex-1">
+                    {[
+                        { id: "overview", label: "Dashboard", icon: LayoutDashboard, badge: null },
+                        { id: "medicines", label: "Inventory", icon: Package, badge: medicines.length },
+                        { id: "orders", label: "Orders", icon: ShoppingBag, badge: orders.length }
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all duration-300 group ${activeTab === tab.id
+                                ? "bg-white/20 text-white"
+                                : "text-emerald-200/60 hover:text-white hover:bg-white/5"
+                                }`}
+                        >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === tab.id
+                                ? "bg-gradient-to-br from-emerald-400 to-teal-400 shadow-lg shadow-emerald-500/30"
+                                : "bg-white/10 group-hover:bg-white/20"
+                                }`}>
+                                <tab.icon className="w-5 h-5" />
+                            </div>
+                            <span className="font-semibold text-sm">{tab.label}</span>
+                            {tab.badge !== null && (
+                                <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-lg ${activeTab === tab.id ? "bg-white/20 text-white" : "bg-white/10 text-emerald-300/60"
+                                    }`}>{tab.badge}</span>
+                            )}
+                        </button>
+                    ))}
+                </nav>
+
+                {/* Quick Actions */}
+                <div className="space-y-2 pt-6 border-t border-white/10">
+                    <Link href="/dashboard" className="w-full px-4 py-3 rounded-xl text-left flex items-center gap-3 text-emerald-200/60 hover:text-white hover:bg-white/5 transition-all">
+                        <User className="w-5 h-5" />
+                        <span className="text-sm font-medium">My Account</span>
+                    </Link>
+                    <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-3 rounded-xl text-left flex items-center gap-3 text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                    >
+                        <LogOut className="w-5 h-5" />
+                        <span className="text-sm font-medium">Sign Out</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:ml-72 pt-24 pb-16 px-6 lg:px-12">
+                {/* Mobile Nav */}
+                <div className="lg:hidden mb-8 overflow-x-auto pb-2">
+                    <div className="flex items-center gap-2 p-1.5 bg-white rounded-2xl shadow-sm border border-slate-100 w-max">
                         {[
-                            { id: "overview", label: "Overview", icon: LayoutDashboard },
+                            { id: "overview", label: "Dashboard", icon: LayoutDashboard },
                             { id: "medicines", label: "Inventory", icon: Package },
-                            { id: "orders", label: "Operations", icon: ShoppingBag }
+                            { id: "orders", label: "Orders", icon: ShoppingBag }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === tab.id ? "bg-slate-900 text-white shadow-md" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"}`}
+                                className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === tab.id ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-600"
+                                    }`}
                             >
                                 <tab.icon className="w-3.5 h-3.5" />
                                 {tab.label}
@@ -269,271 +388,353 @@ export default function SellerDashboard() {
                     </div>
                 </div>
 
-                {/* Content */}
-                {activeTab === "overview" && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {[
-                                { label: "Gross Revenue", val: `৳${totalRevenue.toFixed(2)}`, icon: DollarSign, color: "emerald" },
-                                { label: "Total Orders", val: orders.length, icon: ShoppingBag, color: "sky" },
-                                { label: "Catalog Size", val: `${medicines.length} Units`, icon: Package, color: "purple" },
-                                { label: "Equity Value", val: `৳${(medicines.reduce((sum, m) => sum + (m.price * m.stock), 0)).toFixed(0)}`, icon: Box, color: "orange" }
-                            ].map((stat, i) => (
-                                <div key={i} className="bg-white rounded-[32px] p-8 border border-slate-50 hover:shadow-xl transition-all duration-500 group relative overflow-hidden shadow-sm">
-                                    <div className={`w-12 h-12 bg-${stat.color}-50 rounded-xl flex items-center justify-center text-${stat.color}-600 mb-6 border border-${stat.color}-100/50`}>
-                                        <stat.icon className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-                                        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{stat.val}</h3>
-                                    </div>
+                {/* Header */}
+                <div className="mb-12">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div>
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="px-4 py-1.5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-full border border-emerald-500/20">
+                                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Seller Portal</span>
                                 </div>
-                            ))}
+                                <div className="flex items-center gap-1.5 text-emerald-500">
+                                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Active</span>
+                                </div>
+                            </div>
+                            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight mb-2">
+                                {activeTab === "overview" && "Dashboard Overview"}
+                                {activeTab === "medicines" && "Product Inventory"}
+                                {activeTab === "orders" && "Order Management"}
+                            </h1>
+                            <p className="text-slate-500 font-medium">
+                                {activeTab === "overview" && "Monitor your sales performance and inventory health"}
+                                {activeTab === "medicines" && "Manage your product catalog and stock levels"}
+                                {activeTab === "orders" && "Track and fulfill customer orders"}
+                            </p>
                         </div>
+                        {activeTab === "medicines" && (
+                            <button
+                                onClick={() => { setEditingMedicine(null); setFormData({ name: "", description: "", price: "", stock: "", image: "", categoryId: "" }); setIsModalOpen(true); }}
+                                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                            >
+                                <Plus className="w-5 h-5" />
+                                Add Product
+                            </button>
+                        )}
+                    </div>
+                </div>
 
-                        <div className="grid lg:grid-cols-2 gap-10">
-                            <div className="bg-white rounded-[40px] p-10 border border-slate-50 shadow-sm">
-                                <div className="flex items-center justify-between mb-10">
-                                    <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Recent Sales</h3>
-                                    <button onClick={() => setActiveTab("orders")} className="text-[10px] font-bold uppercase tracking-widest text-sky-600 hover:text-sky-700 transition-colors">View All</button>
-                                </div>
-                                <div className="space-y-4">
-                                    {orders.slice(0, 4).map(order => (
-                                        <div key={order.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-white transition-all group">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-slate-100 group-hover:scale-110 transition-transform">
-                                                    <ShoppingBag className="w-5 h-5 text-sky-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-slate-800">#{order.id.slice(-6).toUpperCase()}</p>
-                                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{new Date(order.createdAt).toLocaleDateString()}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-base font-bold text-slate-900 tracking-tight">৳{order.totalPrice.toFixed(2)}</p>
-                                                <p className="text-[9px] text-sky-500 font-bold uppercase tracking-widest">{order.status}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {orders.length === 0 && (
-                                        <div className="text-center py-20 opacity-40">
-                                            <ShoppingBag className="w-10 h-10 mx-auto mb-4 text-slate-200" />
-                                            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No active orders</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-[40px] p-10 border border-slate-50 shadow-sm">
-                                <div className="flex items-center justify-between mb-10">
-                                    <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Stock Alerts</h3>
-                                    <button onClick={() => setActiveTab("medicines")} className="text-[10px] font-bold uppercase tracking-widest text-sky-600 hover:text-sky-700 transition-colors">Manage</button>
-                                </div>
-                                <div className="space-y-4">
-                                    {medicines.slice(0, 4).map(med => (
-                                        <div key={med.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-white transition-all group">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-white rounded-xl overflow-hidden border border-slate-100 group-hover:scale-110 transition-transform">
-                                                    <img src={med.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=100"} alt="" className="w-full h-full object-cover" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-slate-800 truncate max-w-[150px]">{med.name}</p>
-                                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{med.category.name}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-base font-bold text-slate-900 tracking-tight">৳{med.price.toFixed(2)}</p>
-                                                <p className={`text-[9px] font-bold uppercase tracking-widest ${med.stock < 10 ? 'text-red-500' : 'text-emerald-500'}`}>{med.stock} In Stock</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {medicines.length === 0 && (
-                                        <div className="text-center py-20 opacity-40">
-                                            <Package className="w-10 h-10 mx-auto mb-4 text-slate-200" />
-                                            <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Inventory is empty</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                {/* Content */}
+                {loading ? (
+                    <div className="flex items-center justify-center py-40">
+                        <div className="text-center space-y-4">
+                            <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mx-auto" />
+                            <p className="text-slate-400 font-medium">Loading dashboard data...</p>
                         </div>
                     </div>
-                )}
-
-                {activeTab === "medicines" && (
-                    <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-                        <div className="bg-white rounded-[40px] p-10 border border-slate-50 shadow-sm">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
-                                <div className="space-y-1">
-                                    <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Master Inventory</h2>
-                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                                        <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                                        Live product database
-                                    </p>
+                ) : (
+                    <>
+                        {activeTab === "overview" && (
+                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                    {[
+                                        { label: "Total Revenue", val: `৳${totalRevenue.toFixed(0)}`, icon: DollarSign, color: "from-emerald-500 to-teal-600", trend: "+12.5%", trendUp: true },
+                                        { label: "Total Orders", val: orders.length, icon: ShoppingBag, color: "from-sky-500 to-blue-600", trend: `${pendingOrders} pending`, trendUp: false },
+                                        { label: "Total Products", val: medicines.length, icon: Package, color: "from-purple-500 to-violet-600", trend: `${lowStockItems} low stock`, trendUp: false },
+                                        { label: "Inventory Value", val: `৳${totalInventoryValue.toFixed(0)}`, icon: Box, color: "from-orange-500 to-amber-600", trend: "Total worth", trendUp: false }
+                                    ].map((stat, i) => (
+                                        <div key={i} className="bg-white rounded-3xl p-6 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group relative overflow-hidden">
+                                            <div className="flex items-start justify-between mb-6">
+                                                <div className={`w-14 h-14 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                                                    <stat.icon className="w-7 h-7" />
+                                                </div>
+                                                <div className={`flex items-center gap-1 text-[11px] font-bold ${stat.trendUp ? 'text-emerald-600 bg-emerald-50' : 'text-slate-500 bg-slate-50'} px-2.5 py-1 rounded-lg`}>
+                                                    {stat.trendUp && <ArrowUpRight className="w-3 h-3" />}
+                                                    {stat.trend}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                                                <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{stat.val}</h3>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <button
-                                    onClick={() => { setEditingMedicine(null); setFormData({ name: "", description: "", price: "", stock: "", image: "", categoryId: "" }); setIsModalOpen(true); }}
-                                    className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-sky-600 transition-all shadow-lg active:scale-95 group"
-                                >
-                                    <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-                                    Add New Product
-                                </button>
-                            </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="text-left border-b border-slate-50">
-                                            <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Asset Details</th>
-                                            <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Category</th>
-                                            <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Price</th>
-                                            <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quantity</th>
-                                            <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                                            <th className="text-right px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operations</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {medicines.map(med => (
-                                            <tr key={med.id} className="group hover:bg-slate-50 transition-colors">
-                                                <td className="py-5 px-4">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-xl border border-slate-100 overflow-hidden bg-slate-50 shrink-0">
+                                {/* Quick Stats Row */}
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {[
+                                        { label: "Pending", val: pendingOrders, icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
+                                        { label: "Shipped", val: shippedOrders, icon: Truck, color: "text-sky-500", bg: "bg-sky-50" },
+                                        { label: "Delivered", val: deliveredOrders, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+                                        { label: "Low Stock", val: lowStockItems, icon: AlertTriangle, color: "text-red-500", bg: "bg-red-50" }
+                                    ].map((item, i) => (
+                                        <div key={i} className={`${item.bg} rounded-2xl p-5 flex items-center gap-4 border border-white`}>
+                                            <div className={`w-12 h-12 bg-white rounded-xl flex items-center justify-center ${item.color} shadow-sm`}>
+                                                <item.icon className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <p className="text-2xl font-bold text-slate-900">{item.val}</p>
+                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Recent Orders & Low Stock */}
+                                <div className="grid lg:grid-cols-2 gap-6">
+                                    {/* Recent Orders */}
+                                    <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <div>
+                                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">Recent Orders</h3>
+                                                <p className="text-slate-400 text-xs font-medium mt-1">Latest transactions</p>
+                                            </div>
+                                            <button onClick={() => setActiveTab("orders")} className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700">View All</button>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {orders.slice(0, 4).map(order => (
+                                                <div key={order.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-slate-100">
+                                                            <ShoppingBag className="w-5 h-5 text-slate-400" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-900">#{order.id.slice(-6).toUpperCase()}</p>
+                                                            <p className="text-[10px] text-slate-400 font-medium">{order.customer.name}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-sm font-bold text-slate-900">৳{order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0).toFixed(0)}</p>
+                                                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${getStatusColor(order.status)}`}>{order.status}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {orders.length === 0 && (
+                                                <div className="text-center py-12">
+                                                    <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-slate-200" />
+                                                    <p className="text-sm text-slate-400">No orders yet</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Low Stock Alert */}
+                                    <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <div>
+                                                <h3 className="text-xl font-bold text-slate-900 tracking-tight">Low Stock Alert</h3>
+                                                <p className="text-slate-400 text-xs font-medium mt-1">Products needing restock</p>
+                                            </div>
+                                            <button onClick={() => setActiveTab("medicines")} className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700">Manage</button>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {medicines.filter(m => m.stock < 20).slice(0, 4).map(med => (
+                                                <div key={med.id} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 overflow-hidden">
                                                             <img src={med.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=100"} alt="" className="w-full h-full object-cover" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-base font-bold text-slate-900 tracking-tight">{med.name}</p>
-                                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ID: {med.id.slice(-6).toUpperCase()}</p>
+                                                            <p className="text-sm font-bold text-slate-900 truncate max-w-[150px]">{med.name}</p>
+                                                            <p className="text-[10px] text-slate-400 font-medium">{med.category.name}</p>
                                                         </div>
                                                     </div>
-                                                </td>
-                                                <td className="py-5 px-4">
-                                                    <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-widest rounded-lg">{med.category.name}</span>
-                                                </td>
-                                                <td className="py-5 px-4">
-                                                    <p className="text-base font-bold text-slate-900 tracking-tight">৳{med.price.toFixed(2)}</p>
-                                                </td>
-                                                <td className="py-5 px-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className={`w-1.5 h-1.5 rounded-full ${med.stock < 10 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`}></div>
-                                                        <p className={`text-xs font-bold tracking-tight ${med.stock < 10 ? 'text-red-500' : 'text-slate-900'}`}>{med.stock} Units</p>
+                                                    <div className="text-right">
+                                                        <p className={`text-sm font-bold ${med.stock < 10 ? 'text-red-600' : 'text-amber-600'}`}>{med.stock} left</p>
+                                                        <p className="text-[10px] text-slate-400 font-medium">৳{med.price.toFixed(0)}</p>
                                                     </div>
-                                                </td>
-                                                <td className="py-5 px-4">
-                                                    <button
-                                                        onClick={() => toggleStatus(med)}
-                                                        className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${med.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}
-                                                    >
-                                                        {med.isActive ? 'Visible' : 'Hidden'}
-                                                    </button>
-                                                </td>
-                                                <td className="py-5 px-4">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => openEditModal(med)}
-                                                            className="w-10 h-10 rounded-xl bg-white border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-sky-50 hover:text-sky-600 transition-all shadow-sm"
-                                                        >
-                                                            <Edit3 className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(med.id)}
-                                                            className="w-10 h-10 rounded-xl bg-white border border-slate-100 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-all shadow-sm"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                {medicines.length === 0 && (
-                                    <div className="py-20 text-center border-t border-slate-50 mt-4">
-                                        <Package className="w-12 h-12 mx-auto mb-4 text-slate-100" />
-                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Inventory is empty</p>
+                                                </div>
+                                            ))}
+                                            {medicines.filter(m => m.stock < 20).length === 0 && (
+                                                <div className="text-center py-12">
+                                                    <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-emerald-200" />
+                                                    <p className="text-sm text-slate-400">All products well stocked</p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                )}
+                        )}
 
-                {activeTab === "orders" && (
-                    <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-                        <div className="bg-white rounded-[40px] p-10 border border-slate-50 shadow-sm">
-                            <div className="mb-12">
-                                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Operational Logs</h2>
-                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2 mt-1">
-                                    <ShoppingCart className="w-4 h-4" />
-                                    Active order distribution
-                                </p>
+                        {activeTab === "medicines" && (
+                            <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+                                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <div className="p-8 border-b border-slate-100">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                            <div>
+                                                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Product Catalog</h2>
+                                                <p className="text-slate-400 text-sm mt-1">Manage your medicine inventory</p>
+                                            </div>
+                                            <div className="relative w-full lg:w-80">
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                                <input type="text" placeholder="Search products..." className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border-none outline-none text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-slate-50">
+                                                <tr>
+                                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-left">Product</th>
+                                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-left">Category</th>
+                                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-left">Price</th>
+                                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-left">Stock</th>
+                                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-left">Status</th>
+                                                    <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {medicines.map(med => (
+                                                    <tr key={med.id} className="group hover:bg-slate-50/50 transition-colors">
+                                                        <td className="px-6 py-5">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-100 overflow-hidden">
+                                                                    <img src={med.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=100"} alt="" className="w-full h-full object-cover" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-semibold text-slate-900">{med.name}</p>
+                                                                    <p className="text-xs text-slate-400">ID: {med.id.slice(-6).toUpperCase()}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <span className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-emerald-100">
+                                                                {med.category.name}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <p className="font-bold text-slate-900 text-lg">৳{med.price.toFixed(0)}</p>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`w-2 h-2 rounded-full ${med.stock < 10 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`}></span>
+                                                                <span className={`font-semibold ${med.stock < 10 ? 'text-red-600' : 'text-slate-900'}`}>{med.stock} units</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-5">
+                                                            <button
+                                                                onClick={() => toggleStatus(med)}
+                                                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${med.isActive ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-100 text-slate-400'
+                                                                    }`}
+                                                            >
+                                                                {med.isActive ? 'Active' : 'Hidden'}
+                                                            </button>
+                                                        </td>
+                                                        <td className="px-6 py-5 text-right">
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <button
+                                                                    onClick={() => openEditModal(med)}
+                                                                    className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 transition-all"
+                                                                >
+                                                                    <Edit3 className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDelete(med.id)}
+                                                                    className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-all"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        {medicines.length === 0 && (
+                                            <div className="py-20 text-center">
+                                                <Package className="w-12 h-12 mx-auto mb-4 text-slate-200" />
+                                                <p className="text-slate-400 font-medium">No products in inventory</p>
+                                                <button
+                                                    onClick={() => { setEditingMedicine(null); setFormData({ name: "", description: "", price: "", stock: "", image: "", categoryId: "" }); setIsModalOpen(true); }}
+                                                    className="mt-4 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors"
+                                                >
+                                                    Add First Product
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
+                        )}
 
-                            <div className="space-y-6">
+                        {activeTab === "orders" && (
+                            <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-6">
                                 {orders.map(order => (
-                                    <div key={order.id} className="p-8 rounded-[32px] border border-slate-50 hover:bg-slate-50 transition-all group relative overflow-hidden">
-                                        <div className="flex flex-col lg:flex-row justify-between gap-10">
-                                            <div className="lg:w-1/4 space-y-6">
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Order Tracking</p>
-                                                    <p className="text-sm font-bold text-slate-900 font-mono tracking-tight bg-white px-3 py-1.5 rounded-lg border border-slate-100 w-fit">#{order.id.slice(-10).toUpperCase()}</p>
-                                                </div>
+                                    <div key={order.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-lg transition-all">
+                                        <div className="p-6 lg:p-8">
+                                            <div className="flex flex-col lg:flex-row justify-between gap-8">
+                                                {/* Order Info */}
+                                                <div className="lg:w-1/4 space-y-6">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Order ID</p>
+                                                        <p className="text-sm font-bold text-slate-900 font-mono bg-slate-50 px-3 py-2 rounded-lg w-fit">#{order.id.slice(-10).toUpperCase()}</p>
+                                                    </div>
 
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Status Control</p>
-                                                    <select
-                                                        value={order.status}
-                                                        onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                                                        className={`w-full px-4 py-2.5 rounded-xl text-[10px] font-bold outline-none border transition-all appearance-none cursor-pointer uppercase tracking-widest ${order.status === "DELIVERED" ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                                            order.status === "SHIPPED" ? "bg-sky-50 text-sky-600 border-sky-100" :
-                                                                order.status === "CANCELLED" ? "bg-red-50 text-red-600 border-red-100" :
-                                                                    "bg-amber-50 text-amber-600 border-amber-100"
-                                                            }`}
-                                                    >
-                                                        <option value="PROCESSING">Processing</option>
-                                                        <option value="SHIPPED">Shipped</option>
-                                                        <option value="DELIVERED">Delivered</option>
-                                                        <option value="CANCELLED">Cancelled</option>
-                                                    </select>
-                                                </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Update Status</p>
+                                                        <select
+                                                            value={order.status}
+                                                            onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                                                            className={`w-full px-4 py-2.5 rounded-xl text-sm font-semibold outline-none border transition-all cursor-pointer ${getStatusColor(order.status)}`}
+                                                        >
+                                                            <option value="PENDING">Pending</option>
+                                                            <option value="PROCESSING">Processing</option>
+                                                            <option value="SHIPPED">Shipped</option>
+                                                            <option value="DELIVERED">Delivered</option>
+                                                            <option value="CANCELLED">Cancelled</option>
+                                                        </select>
+                                                    </div>
 
-                                                <div className="space-y-3 pt-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                                                            <User className="w-4 h-4 text-white" />
+                                                    <div className="flex items-center gap-3 pt-2">
+                                                        <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center">
+                                                            <User className="w-5 h-5 text-slate-400" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-bold text-slate-900">{order.customer.name}</p>
-                                                            <p className="text-[9px] text-slate-400 font-bold uppercase">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                                            <p className="text-sm font-bold text-slate-900">{order.customer.name}</p>
+                                                            <p className="text-[10px] text-slate-400">{new Date(order.createdAt).toLocaleDateString()}</p>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="lg:w-2/5 space-y-4">
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Manifest</p>
-                                                <div className="bg-white p-6 rounded-2xl border border-slate-100 space-y-3 max-h-[200px] overflow-y-auto">
-                                                    {order.items.map(item => (
-                                                        <div key={item.id} className="flex justify-between items-center text-xs">
-                                                            <p className="font-bold text-slate-800">{item.medicine.name} <span className="text-slate-400 font-medium">x{item.quantity}</span></p>
-                                                            <p className="font-bold text-slate-900">৳{(item.price * item.quantity).toFixed(2)}</p>
-                                                        </div>
-                                                    ))}
+                                                {/* Items */}
+                                                <div className="lg:w-2/5 space-y-4">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order Items</p>
+                                                    <div className="bg-slate-50 p-4 rounded-2xl space-y-3 max-h-[180px] overflow-y-auto">
+                                                        {order.items.map(item => (
+                                                            <div key={item.id} className="flex justify-between items-center p-2 bg-white rounded-xl">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-slate-100">
+                                                                        <img src={item.medicine.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=100"} alt="" className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm font-semibold text-slate-900">{item.medicine.name}</p>
+                                                                        <p className="text-[10px] text-slate-400">Qty: {item.quantity}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <p className="font-bold text-slate-900">৳{(item.price * item.quantity).toFixed(0)}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex justify-between items-center pt-2 px-1">
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Your Earnings</p>
+                                                        <p className="text-xl font-bold text-emerald-600">৳{order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0).toFixed(0)}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="flex justify-between items-center px-2 pt-2">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Revenue</p>
-                                                    <p className="text-xl font-bold text-slate-900 tracking-tight">৳{order.items.reduce((sum, i) => sum + (i.price * i.quantity), 0).toFixed(2)}</p>
-                                                </div>
-                                            </div>
 
-                                            <div className="lg:w-1/3">
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-1">Destination</p>
-                                                <div className="bg-slate-900 p-6 rounded-2xl group/address transition-all relative overflow-hidden shadow-xl shadow-slate-200">
-                                                    <div className="flex gap-4 relative z-10">
-                                                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white shrink-0">
-                                                            <Truck className="w-5 h-5" />
+                                                {/* Shipping */}
+                                                <div className="lg:w-1/3">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Shipping Address</p>
+                                                    <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-5 rounded-2xl text-white">
+                                                        <div className="flex gap-3">
+                                                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                                <MapPin className="w-5 h-5" />
+                                                            </div>
+                                                            <p className="text-sm leading-relaxed opacity-90">{order.shippingAddress}</p>
                                                         </div>
-                                                        <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                                                            {order.shippingAddress}
-                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -541,45 +742,49 @@ export default function SellerDashboard() {
                                     </div>
                                 ))}
                                 {orders.length === 0 && (
-                                    <div className="py-20 text-center">
-                                        <Truck className="w-12 h-12 mx-auto mb-4 text-slate-100" />
-                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No active distribution</p>
+                                    <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-20 text-center">
+                                        <ShoppingBag className="w-16 h-16 mx-auto mb-4 text-slate-200" />
+                                        <h3 className="text-xl font-bold text-slate-900 mb-2">No Orders Yet</h3>
+                                        <p className="text-slate-400">Orders will appear here when customers purchase your products</p>
                                     </div>
                                 )}
                             </div>
-                        </div>
-                    </div>
+                        )}
+                    </>
                 )}
             </div>
 
             {/* Modal for Add/Edit Medicine */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-2xl rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
-                        <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-slate-900">{editingMedicine ? "Edit Product" : "Add New Product"}</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all">
-                                <X className="w-4 h-4" />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-900">{editingMedicine ? "Edit Product" : "Add New Product"}</h2>
+                                <p className="text-slate-400 text-sm mt-0.5">Fill in the product details below</p>
+                            </div>
+                            <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 rounded-xl bg-white text-slate-400 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all border border-slate-100">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <form onSubmit={handleFormSubmit} className="p-8 space-y-5">
-                            <div className="grid md:grid-cols-2 gap-5">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Product Name</label>
+                        <form onSubmit={handleFormSubmit} className="p-8 space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700">Product Name</label>
                                     <input
                                         type="text"
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-bold"
-                                        placeholder="Enter medicine name..."
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
+                                        placeholder="e.g. Paracetamol 500mg"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700">Category</label>
                                     <select
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-bold appearance-none cursor-pointer"
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
                                         value={formData.categoryId}
                                         onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                                     >
@@ -591,36 +796,36 @@ export default function SellerDashboard() {
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Description</label>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Description</label>
                                 <textarea
                                     required
-                                    className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-bold min-h-[100px] resize-none"
+                                    className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium min-h-[100px] resize-none transition-all"
                                     placeholder="Enter product description..."
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 />
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-5">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Price (৳)</label>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700">Price (৳)</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-bold"
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
                                         placeholder="0.00"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Stock</label>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-slate-700">Stock Quantity</label>
                                     <input
                                         type="number"
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-bold"
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
                                         placeholder="0"
                                         value={formData.stock}
                                         onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
@@ -628,14 +833,12 @@ export default function SellerDashboard() {
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Image URL</label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border-none focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-bold"
-                                    placeholder="https://..."
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Product Image</label>
+                                <ImageUpload
                                     value={formData.image}
-                                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                    onChange={(url) => setFormData({ ...formData, image: url as string })}
+                                    maxFiles={1}
                                 />
                             </div>
 
@@ -643,14 +846,14 @@ export default function SellerDashboard() {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-4 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+                                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-xl font-semibold hover:bg-slate-200 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={formLoading}
-                                    className="flex-[2] py-4 bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-sky-600 transition-all shadow-lg flex items-center justify-center gap-2"
+                                    className="flex-[2] py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
                                 >
                                     {formLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {editingMedicine ? "Save Changes" : "Create Product"}

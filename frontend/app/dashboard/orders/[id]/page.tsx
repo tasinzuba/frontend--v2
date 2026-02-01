@@ -41,6 +41,8 @@ interface Order {
     items: OrderItem[];
 }
 
+import { XCircle } from "lucide-react";
+
 export default function OrderDetailPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -56,25 +58,41 @@ export default function OrderDetailPage() {
         }
     }, [session, authPending, router, id]);
 
-    useEffect(() => {
-        const fetchOrder = async () => {
-            try {
-                const res = await fetch(`${backendUrl}/api/orders/${id}`, {
-                    credentials: "include"
-                });
-                const json = await res.json();
-                if (json.success) {
-                    setOrder(json.data);
-                }
-            } catch (e) {
-                console.error("Order fetch failed", e);
-            } finally {
-                setLoading(false);
+    const fetchOrder = async () => {
+        try {
+            const res = await fetch(`${backendUrl}/api/orders/${id}`, {
+                credentials: "include"
+            });
+            const json = await res.json();
+            if (json.success) {
+                setOrder(json.data);
             }
-        };
+        } catch (e) {
+            console.error("Order fetch failed", e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (session) fetchOrder();
     }, [session, id, backendUrl]);
+
+    const handleCancel = async () => {
+        if (!confirm("Are you sure you want to abort this manifest?")) return;
+        try {
+            const res = await fetch(`${backendUrl}/api/orders/${id}/cancel`, {
+                method: "PATCH",
+                credentials: "include"
+            });
+            const json = await res.json();
+            if (json.success) {
+                fetchOrder();
+            }
+        } catch (e) {
+            console.error("Cancel failed", e);
+        }
+    };
 
     if (loading || authPending) {
         return (
@@ -101,6 +119,8 @@ export default function OrderDetailPage() {
             case "DELIVERED": return "bg-emerald-50 text-emerald-600 border-emerald-100";
             case "SHIPPED": return "bg-blue-50 text-blue-600 border-blue-100";
             case "PROCESSING": return "bg-orange-50 text-orange-600 border-orange-100";
+            case "CANCELLED": return "bg-red-50 text-red-600 border-red-100";
+            case "PENDING": return "bg-sky-50 text-sky-600 border-sky-100";
             default: return "bg-slate-50 text-slate-600 border-slate-100";
         }
     };
@@ -129,6 +149,15 @@ export default function OrderDetailPage() {
                                     <div className={`px-4 py-1.5 rounded-full text-xs font-bold border inline-block ${getStatusStyles(order.status)}`}>
                                         {order.status}
                                     </div>
+                                    {order.status === "PENDING" && (
+                                        <button
+                                            onClick={handleCancel}
+                                            className="ml-4 text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                                        >
+                                            <XCircle className="w-3.5 h-3.5" />
+                                            Abort Manifest
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="text-right">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Payload</p>

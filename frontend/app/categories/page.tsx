@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { LayoutGrid, Search, ArrowRight, Loader2 } from "lucide-react";
+import { LayoutGrid, ArrowRight, Loader2, Sparkles, TrendingUp, Package, Pill } from "lucide-react";
 
 interface Category {
     id: string;
@@ -12,6 +12,17 @@ interface Category {
     _count?: { medicines: number };
 }
 
+const categoryColors = [
+    "from-sky-500 to-blue-600",
+    "from-emerald-500 to-teal-600",
+    "from-purple-500 to-violet-600",
+    "from-orange-500 to-amber-600",
+    "from-pink-500 to-rose-600",
+    "from-cyan-500 to-sky-600",
+    "from-indigo-500 to-purple-600",
+    "from-lime-500 to-green-600"
+];
+
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -20,7 +31,7 @@ export default function CategoriesPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend-v2-sb9v.vercel.app";
+                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
                 const res = await fetch(`${backendUrl}/api/medicines/categories`, { credentials: "include" });
                 const data = await res.json();
                 if (data.success) {
@@ -40,72 +51,124 @@ export default function CategoriesPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-sky-500 animate-spin mx-auto mb-4" />
-                    <p className="text-slate-500 font-bold animate-pulse italic">Sorting catalog...</p>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
+                <div className="text-center space-y-6">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center animate-pulse shadow-lg shadow-emerald-500/20">
+                        <LayoutGrid className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="space-y-2">
+                        <Loader2 className="w-6 h-6 animate-spin text-emerald-500 mx-auto" />
+                        <p className="text-slate-400 text-sm font-medium">Loading categories...</p>
+                    </div>
                 </div>
             </div>
         );
     }
 
+    const totalProducts = categories.reduce((acc, cat) => acc + (cat._count?.medicines || 0), 0);
+
     return (
-        <div className="min-h-screen bg-[#f8fafc] pt-28 pb-20 animate-slide-up">
-            <div className="max-w-[1300px] mx-auto px-4 md:px-10">
-                {/* Header */}
-                <div className="text-center space-y-4 mb-24">
-                    <div className="inline-flex items-center gap-2.5 px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold uppercase tracking-widest mx-auto border border-emerald-100/50 shadow-sm">
-                        <LayoutGrid className="w-3.5 h-3.5" />
-                        Explore Our Taxonomy
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 pt-28 pb-20">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-10">
+                {/* Hero Section */}
+                <div className="relative mb-20 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-teal-500/5 rounded-[60px]"></div>
+                    <div className="relative z-10 text-center py-16 px-8">
+                        <div className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[11px] font-bold uppercase tracking-widest mb-6 border border-emerald-100">
+                            <Sparkles className="w-4 h-4" />
+                            Explore Our Collection
+                        </div>
+                        <h1 className="text-5xl lg:text-7xl font-bold text-slate-900 tracking-tight mb-6">
+                            Product <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Categories</span>
+                        </h1>
+                        <p className="text-slate-500 font-medium max-w-2xl mx-auto text-lg leading-relaxed mb-10">
+                            Browse our carefully curated healthcare departments. Find exactly what you need from our comprehensive range of pharmaceutical products.
+                        </p>
+
+                        {/* Stats */}
+                        <div className="flex items-center justify-center gap-8">
+                            <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-2xl shadow-sm border border-slate-100">
+                                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                    <LayoutGrid className="w-5 h-5 text-emerald-600" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-2xl font-bold text-slate-900">{categories.length}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Categories</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-2xl shadow-sm border border-slate-100">
+                                <div className="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center">
+                                    <Package className="w-5 h-5 text-sky-600" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-2xl font-bold text-slate-900">{totalProducts}+</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Products</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h1 className="text-6xl font-bold text-slate-900 tracking-tight">Product <span className="text-emerald-600">Categories</span></h1>
-                    <p className="text-slate-500 font-medium max-w-xl mx-auto leading-relaxed">
-                        Find exactly what you need by browsing our specialized healthcare departments and trusted pharmaceutical product groups.
-                    </p>
                 </div>
 
-                {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-                    {categories.map((cat) => (
+                {/* Categories Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {categories.map((cat, idx) => (
                         <Link
                             key={cat.id}
                             href={`/medicines?category=${cat.id}`}
-                            className="group relative bg-white rounded-[40px] p-8 border border-slate-50 hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 text-center"
+                            className="group relative bg-white rounded-[32px] overflow-hidden border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-700 hover:-translate-y-2"
                         >
-                            <div className="relative w-36 h-36 mx-auto mb-10 rounded-[32px] overflow-hidden shadow-inner group-hover:scale-105 transition-transform duration-1000 bg-slate-50">
+                            {/* Image */}
+                            <div className="relative h-48 overflow-hidden">
                                 <img
                                     src={cat.image || "https://images.unsplash.com/photo-1576602976047-174e57a47881?q=80&w=400"}
                                     alt={cat.name}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                                 />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+
+                                {/* Floating Badge */}
+                                <div className="absolute top-4 right-4">
+                                    <div className={`px-3 py-1.5 bg-gradient-to-r ${categoryColors[idx % categoryColors.length]} rounded-full text-white text-[10px] font-bold uppercase tracking-widest shadow-lg`}>
+                                        {cat._count?.medicines || 0} Items
+                                    </div>
+                                </div>
+
+                                {/* Title on Image */}
+                                <div className="absolute bottom-4 left-4 right-4">
+                                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">{cat.name}</h3>
+                                </div>
                             </div>
 
-                            <h3 className="font-bold text-2xl text-slate-900 mb-3 tracking-tight group-hover:text-emerald-600 transition-colors">
-                                {cat.name}
-                            </h3>
-                            <div className="inline-block px-4 py-1 bg-slate-50 rounded-lg mb-6 border border-slate-100/50">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widestAlpha">
-                                    {cat._count?.medicines || 0} Products
+                            {/* Content */}
+                            <div className="p-6">
+                                <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-2">
+                                    {cat.description || "Discover our selection of high-quality healthcare products."}
                                 </p>
-                            </div>
-                            <p className="text-slate-500 text-sm font-medium line-clamp-2 px-2 h-10 mb-8 leading-relaxed">
-                                {cat.description || "High quality products carefully selected for your health and wellbeing."}
-                            </p>
 
-                            <div className="inline-flex items-center gap-3 text-xs font-bold text-emerald-600 uppercase tracking-widest group-hover:gap-5 transition-all">
-                                Explore Store <ArrowRight className="w-4 h-4" />
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-emerald-600">
+                                        <TrendingUp className="w-4 h-4" />
+                                        <span className="text-[11px] font-bold uppercase tracking-widest">Popular</span>
+                                    </div>
+                                    <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white group-hover:bg-emerald-600 transition-colors">
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                                    </div>
+                                </div>
                             </div>
+
+                            {/* Hover Gradient Border */}
+                            <div className={`absolute inset-0 rounded-[32px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} style={{ background: `linear-gradient(to bottom right, transparent 60%, rgba(16, 185, 129, 0.1))` }}></div>
                         </Link>
                     ))}
                 </div>
 
                 {categories.length === 0 && (
-                    <div className="text-center py-40 bg-white rounded-[60px] border-2 border-dashed border-slate-100">
+                    <div className="text-center py-32 bg-white rounded-[48px] border border-slate-100 shadow-sm">
                         <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
-                            <LayoutGrid className="w-10 h-10 text-slate-200" />
+                            <Pill className="w-12 h-12 text-slate-200" />
                         </div>
-                        <h3 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Catalog Under Construction</h3>
-                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">We are currently organizing our healthcare departments.</p>
+                        <h3 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">No Categories Found</h3>
+                        <p className="text-slate-400 font-medium max-w-md mx-auto">We're currently setting up our product categories. Please check back soon!</p>
                     </div>
                 )}
             </div>

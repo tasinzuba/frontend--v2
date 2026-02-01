@@ -19,7 +19,18 @@ import {
     MapPin,
     ArrowRight,
     LayoutDashboard,
-    ShieldAlert
+    ShieldAlert,
+    Settings,
+    Bell,
+    CreditCard,
+    Heart,
+    Star,
+    TrendingUp,
+    Shield,
+    Sparkles,
+    Eye,
+    LogOut,
+    Edit3
 } from "lucide-react";
 import Link from "next/link";
 
@@ -48,6 +59,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<"orders" | "settings">("orders");
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
@@ -80,19 +92,27 @@ export default function DashboardPage() {
 
     if (authPending || !session) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-10 h-10 animate-spin text-sky-500" />
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100">
+                <div className="text-center space-y-6">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-sky-500 to-blue-600 rounded-3xl flex items-center justify-center animate-pulse shadow-lg shadow-sky-500/20">
+                        <User className="w-10 h-10 text-white" />
+                    </div>
+                    <div className="space-y-2">
+                        <Loader2 className="w-6 h-6 animate-spin text-sky-500 mx-auto" />
+                        <p className="text-slate-400 text-sm font-medium">Loading dashboard...</p>
+                    </div>
+                </div>
             </div>
         );
     }
 
     const getStatusStyles = (status: string) => {
         switch (status) {
-            case "DELIVERED": return "bg-emerald-50 text-emerald-600 border-emerald-100";
-            case "SHIPPED": return "bg-blue-50 text-blue-600 border-blue-100";
-            case "PROCESSING": return "bg-orange-50 text-orange-600 border-orange-100";
-            case "CANCELLED": return "bg-red-50 text-red-600 border-red-100";
-            default: return "bg-slate-50 text-slate-600 border-slate-100";
+            case "DELIVERED": return "bg-emerald-500/10 text-emerald-600 border-emerald-200";
+            case "SHIPPED": return "bg-blue-500/10 text-blue-600 border-blue-200";
+            case "PROCESSING": return "bg-amber-500/10 text-amber-600 border-amber-200";
+            case "CANCELLED": return "bg-red-500/10 text-red-600 border-red-200";
+            default: return "bg-slate-500/10 text-slate-600 border-slate-200";
         }
     };
 
@@ -106,218 +126,410 @@ export default function DashboardPage() {
         }
     };
 
+    const pendingOrders = orders.filter(o => o.status === "PENDING").length;
+    const deliveredOrders = orders.filter(o => o.status === "DELIVERED").length;
+    const totalSpent = orders.reduce((acc, o) => acc + o.totalPrice, 0);
+
     return (
-        <div className="min-h-screen bg-[#f8fafc] pt-28 pb-20 animate-slide-up">
-            <div className="max-w-[1300px] mx-auto px-4 md:px-10">
-                {/* Dashboard Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-3 px-4 py-1.5 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)] rounded-full w-fit border border-slate-50">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-sky-600">Secure Portal</span>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+            {/* Sidebar */}
+            <div className="fixed left-0 top-0 h-screen w-72 bg-white pt-24 pb-8 px-6 hidden lg:flex flex-col z-40 border-r border-slate-100">
+                {/* Profile Section */}
+                <div className="mb-8 pb-8 border-b border-slate-100">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-sky-500/20 overflow-hidden">
+                            {session.user.image ? (
+                                <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <User className="w-8 h-8 text-white" />
+                            )}
                         </div>
-                        <h1 className="text-5xl font-black text-slate-900 italic tracking-tight">User <span className="bg-gradient-to-r from-sky-600 to-emerald-500 bg-clip-text text-transparent">Dashboard</span></h1>
-                        <p className="text-base text-slate-500 font-medium">Manage your pharmaceutical orders and healthcare profile.</p>
+                        <div className="flex-1 min-w-0">
+                            <h2 className="text-lg font-bold text-slate-900 truncate">{session.user.name}</h2>
+                            <span className="inline-flex items-center px-2.5 py-0.5 bg-sky-50 text-sky-600 text-[10px] font-bold uppercase tracking-widest rounded-md border border-sky-100">
+                                {(session.user as any).role || 'Customer'}
+                            </span>
+                        </div>
                     </div>
+                    <p className="text-sm text-slate-500 truncate">{session.user.email}</p>
+                </div>
+
+                {/* Navigation */}
+                <nav className="space-y-2 flex-1">
+                    <button
+                        onClick={() => setActiveTab("orders")}
+                        className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all ${activeTab === "orders"
+                            ? "bg-slate-900 text-white shadow-lg"
+                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                    >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeTab === "orders" ? "bg-white/20" : "bg-slate-100"}`}>
+                            <ShoppingBag className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                            <span className="font-semibold text-sm">My Orders</span>
+                            <p className={`text-[10px] ${activeTab === "orders" ? "text-white/60" : "text-slate-400"}`}>{orders.length} total orders</p>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab("settings")}
+                        className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all ${activeTab === "settings"
+                            ? "bg-slate-900 text-white shadow-lg"
+                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                            }`}
+                    >
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeTab === "settings" ? "bg-white/20" : "bg-slate-100"}`}>
+                            <Settings className="w-5 h-5" />
+                        </div>
+                        <span className="font-semibold text-sm">Account Settings</span>
+                    </button>
+
+                    {/* Role-specific links */}
                     {(session?.user as any).role === "SELLER" && (
                         <Link
                             href="/dashboard/seller"
-                            className="px-10 py-4.5 bg-slate-900 text-white rounded-[24px] font-black italic flex items-center gap-3 hover:bg-sky-600 transition-all shadow-2xl shadow-slate-200 group hover:scale-[1.02] active:scale-95"
+                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-emerald-600 hover:bg-emerald-50"
                         >
-                            <LayoutDashboard className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                            Seller Terminal
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-100">
+                                <LayoutDashboard className="w-5 h-5" />
+                            </div>
+                            <span className="font-semibold text-sm">Seller Dashboard</span>
+                            <ChevronRight className="w-5 h-5 ml-auto" />
                         </Link>
                     )}
+
                     {(session?.user as any).role === "ADMIN" && (
                         <Link
                             href="/dashboard/admin"
-                            className="px-10 py-4.5 bg-sky-600 text-white rounded-[24px] font-black italic flex items-center gap-3 hover:bg-slate-900 transition-all shadow-2xl shadow-sky-200 group hover:scale-[1.02] active:scale-95"
+                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-purple-600 hover:bg-purple-50"
                         >
-                            <ShieldAlert className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                            Admin Terminal
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-100">
+                                <ShieldAlert className="w-5 h-5" />
+                            </div>
+                            <span className="font-semibold text-sm">Admin Panel</span>
+                            <ChevronRight className="w-5 h-5 ml-auto" />
                         </Link>
                     )}
+                </nav>
+
+                {/* Quick Actions */}
+                <div className="pt-6 border-t border-slate-100 space-y-2">
+                    <Link href="/medicines" className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-sky-600 transition-colors">
+                        <Sparkles className="w-5 h-5" />
+                        <span className="text-sm font-medium">Browse Medicines</span>
+                    </Link>
+                    <button className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:text-red-600 transition-colors">
+                        <LogOut className="w-5 h-5" />
+                        <span className="text-sm font-medium">Sign Out</span>
+                    </button>
                 </div>
+            </div>
 
-                <div className="grid lg:grid-cols-4 gap-10 items-start">
-                    {/* Left Column: Profile Card */}
-                    <div className="lg:col-span-1 space-y-8 sticky top-28">
-                        <div className="glass-card rounded-[48px] p-10 border-white relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-
-                            <div className="flex flex-col items-center text-center relative">
-                                <div className="w-28 h-28 bg-white shadow-2xl rounded-full flex items-center justify-center mb-8 border-4 border-slate-50 overflow-hidden group">
-                                    {session.user.image ? (
-                                        <img src={session.user.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                    ) : (
-                                        <User className="w-14 h-14 text-slate-200" />
-                                    )}
-                                </div>
-                                <h3 className="text-2xl font-black text-slate-900 italic tracking-tight mb-2">{session.user.name}</h3>
-                                <div className="px-5 py-1.5 bg-sky-50/50 rounded-full border border-sky-100/50">
-                                    <p className="text-[10px] font-black text-sky-600 uppercase tracking-[0.2em]">{(session.user as any).role || 'Customer'}</p>
-                                </div>
-                            </div>
-
-                            <div className="mt-12 space-y-6">
-                                <div className="flex items-center gap-5 group">
-                                    <div className="w-12 h-12 bg-[#f8fafc] rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-sky-500 group-hover:bg-white group-hover:shadow-lg transition-all border border-transparent group-hover:border-slate-50">
-                                        <Mail className="w-6 h-6" />
-                                    </div>
-                                    <div className="overflow-hidden">
-                                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">Email</p>
-                                        <p className="text-sm font-bold text-slate-900 truncate">{session.user.email}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-5 group">
-                                    <div className="w-12 h-12 bg-[#f8fafc] rounded-2xl flex items-center justify-center text-slate-300 group-hover:text-sky-500 group-hover:bg-white group-hover:shadow-lg transition-all border border-transparent group-hover:border-slate-50">
-                                        <Phone className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mb-1">Phone</p>
-                                        <p className="text-sm font-bold text-slate-900">{(session.user as any).phone || 'Not provided'}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button className="w-full mt-12 py-4.5 bg-slate-900 text-white rounded-[20px] font-black italic text-xs uppercase tracking-widest hover:bg-sky-600 transition-all shadow-xl shadow-slate-100 hover:scale-[1.02] active:scale-95">
-                                Edit Profile
-                            </button>
+            {/* Main Content */}
+            <div className="lg:ml-72 pt-24 pb-16 px-6 lg:px-12">
+                {/* Mobile Header */}
+                <div className="lg:hidden mb-8">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 bg-gradient-to-br from-sky-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
+                            {session.user.image ? (
+                                <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <User className="w-7 h-7 text-white" />
+                            )}
                         </div>
-
-                        {/* Quick Stats */}
-                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[40px] p-10 text-white shadow-2xl shadow-slate-200 relative overflow-hidden group">
-                            <div className="absolute bottom-0 right-0 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl -mr-16 -mb-16"></div>
-                            <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.3em] mb-6">Total Deliveries</p>
-                            <div className="flex items-end justify-between relative">
-                                <h4 className="text-6xl font-black italic tracking-tighter group-hover:scale-110 transition-transform origin-left duration-500">{orders.length}</h4>
-                                <div className="w-16 h-16 bg-white/5 backdrop-blur-lg rounded-2xl flex items-center justify-center">
-                                    <ShoppingBag className="w-8 h-8 text-sky-400" />
-                                </div>
-                            </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900">{session.user.name}</h2>
+                            <p className="text-sm text-slate-500">{session.user.email}</p>
                         </div>
                     </div>
 
-                    {/* Right Column: Orders & Activity */}
-                    <div className="lg:col-span-3 space-y-12">
-                        <section>
-                            <div className="flex items-center justify-between mb-10 px-4">
-                                <h2 className="text-3xl font-black text-slate-900 italic tracking-tight">Activity Log</h2>
-                                <Link href="/medicines" className="text-xs font-black uppercase tracking-widest text-sky-600 hover:text-sky-700 transition-colors flex items-center gap-2 group">
-                                    Shop More <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    {/* Mobile Nav */}
+                    <div className="flex gap-2 p-1.5 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                        <button
+                            onClick={() => setActiveTab("orders")}
+                            className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === "orders" ? "bg-slate-900 text-white" : "text-slate-500"}`}
+                        >
+                            Orders
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("settings")}
+                            className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === "settings" ? "bg-slate-900 text-white" : "text-slate-500"}`}
+                        >
+                            Settings
+                        </button>
+                    </div>
+                </div>
+
+                {/* Header */}
+                <div className="mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="px-4 py-1.5 bg-gradient-to-r from-sky-500/10 to-blue-500/10 rounded-full border border-sky-500/20">
+                            <span className="text-[10px] font-bold text-sky-600 uppercase tracking-widest">Personal Dashboard</span>
+                        </div>
+                    </div>
+                    <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight mb-2">
+                        {activeTab === "orders" ? "My Orders" : "Account Settings"}
+                    </h1>
+                    <p className="text-slate-500 font-medium">
+                        {activeTab === "orders" ? "Track and manage your pharmaceutical orders" : "Manage your account preferences and security"}
+                    </p>
+                </div>
+
+                {activeTab === "orders" && (
+                    <>
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                            {[
+                                { label: "Total Orders", value: orders.length, icon: ShoppingBag, color: "from-sky-500 to-blue-600", bgColor: "sky" },
+                                { label: "Total Spent", value: `৳${totalSpent.toFixed(0)}`, icon: CreditCard, color: "from-emerald-500 to-teal-600", bgColor: "emerald" },
+                                { label: "Pending", value: pendingOrders, icon: Clock, color: "from-amber-500 to-orange-600", bgColor: "amber" },
+                                { label: "Delivered", value: deliveredOrders, icon: CheckCircle2, color: "from-purple-500 to-violet-600", bgColor: "purple" }
+                            ].map((stat, i) => (
+                                <div key={i} className="bg-white rounded-2xl p-5 border border-slate-100 hover:shadow-lg transition-all group">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                                            <stat.icon className="w-6 h-6" />
+                                        </div>
+                                    </div>
+                                    <p className="text-2xl font-bold text-slate-900 mb-1">{stat.value}</p>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Orders List */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-slate-900">Recent Orders</h3>
+                                <Link href="/medicines" className="text-sm font-semibold text-sky-600 hover:text-sky-700 flex items-center gap-2">
+                                    Shop More <ArrowRight className="w-4 h-4" />
                                 </Link>
                             </div>
 
                             {loading ? (
-                                <div className="glass-card rounded-[48px] p-32 flex flex-col items-center justify-center text-center">
-                                    <div className="relative mb-8">
-                                        <div className="w-16 h-16 border-4 border-sky-100 rounded-full animate-spin border-t-sky-500"></div>
-                                        <Package className="absolute inset-0 m-auto w-6 h-6 text-sky-500 animate-pulse" />
-                                    </div>
-                                    <p className="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">Retrieving secure history...</p>
+                                <div className="bg-white rounded-3xl p-16 border border-slate-100 text-center">
+                                    <Loader2 className="w-10 h-10 text-sky-500 animate-spin mx-auto mb-4" />
+                                    <p className="text-slate-400 font-medium">Loading your orders...</p>
                                 </div>
                             ) : orders.length > 0 ? (
-                                <div className="space-y-6">
-                                    {orders.map((order) => (
-                                        <div key={order.id} className="group glass-card rounded-[40px] p-8 hover:shadow-2xl hover:shadow-sky-100/50 transition-all duration-700 hover:-translate-y-2 border-white relative overflow-hidden">
-                                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 relative z-10">
-                                                <div className="flex items-center gap-8">
-                                                    <div className="w-20 h-20 bg-[#f8fafc] rounded-3xl flex items-center justify-center text-sky-600 border border-white shadow-inner group-hover:scale-110 transition-transform duration-500">
-                                                        <Package className="w-10 h-10" />
+                                orders.map((order) => (
+                                    <div key={order.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all group">
+                                        <div className="p-6">
+                                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                                {/* Order Info */}
+                                                <div className="flex items-start gap-5">
+                                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-sky-50 transition-colors">
+                                                        <Package className="w-8 h-8 text-slate-300 group-hover:text-sky-500 transition-colors" />
                                                     </div>
-                                                    <div className="space-y-3">
-                                                        <div className="flex flex-wrap items-center gap-4">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] font-mono bg-slate-50 px-3 py-1 rounded-full border border-slate-100 shadow-sm">ID: #{order.id.slice(-8).toUpperCase()}</p>
-                                                            <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black border uppercase tracking-[0.15em] shadow-sm ${getStatusStyles(order.status)}`}>
+                                                    <div className="space-y-2">
+                                                        <div className="flex flex-wrap items-center gap-3">
+                                                            <p className="font-mono font-bold text-slate-900">#{order.id.slice(-8).toUpperCase()}</p>
+                                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${getStatusStyles(order.status)}`}>
                                                                 {getStatusIcon(order.status)}
                                                                 {order.status}
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-wrap items-center gap-6 text-xs font-black text-slate-400 uppercase tracking-widest">
-                                                            <div className="flex items-center gap-2">
-                                                                <Calendar className="w-4 h-4 text-sky-500/50" />
-                                                                {new Date(order.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                            </div>
-                                                            <div className="flex items-center gap-2">
-                                                                <MapPin className="w-4 h-4 text-emerald-500/50" />
+                                                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Calendar className="w-4 h-4 text-slate-400" />
+                                                                {new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                            <span className="flex items-center gap-1.5">
+                                                                <MapPin className="w-4 h-4 text-slate-400" />
                                                                 <span className="truncate max-w-[200px]">{order.shippingAddress}</span>
-                                                            </div>
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between xl:justify-end gap-12 pt-6 xl:pt-0 border-t xl:border-t-0 border-slate-100/50">
-                                                    <div className="text-left xl:text-right">
-                                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-2">Total Amount</p>
-                                                        <p className="text-4xl font-black text-slate-900 italic tracking-tighter"><span className="text-xl text-sky-600 font-bold">৳</span>{order.totalPrice.toFixed(2)}</p>
+                                                {/* Price & Action */}
+                                                <div className="flex items-center gap-6 lg:gap-10">
+                                                    <div className="text-right">
+                                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total</p>
+                                                        <p className="text-2xl font-bold text-slate-900">
+                                                            <span className="text-lg text-sky-600">৳</span>{order.totalPrice.toFixed(0)}
+                                                        </p>
                                                     </div>
-                                                    <Link href={`/dashboard/orders/${order.id}`} className="w-16 h-16 rounded-[24px] bg-slate-900 text-white flex items-center justify-center shadow-xl shadow-slate-200 hover:bg-sky-600 transition-all active:scale-95 group/btn">
-                                                        <ChevronRight className="w-8 h-8 group-hover/btn:translate-x-1 transition-transform" />
+                                                    <Link
+                                                        href={`/dashboard/orders/${order.id}`}
+                                                        className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white hover:bg-sky-600 transition-all shadow-lg"
+                                                    >
+                                                        <Eye className="w-5 h-5" />
                                                     </Link>
                                                 </div>
                                             </div>
 
-                                            {/* Order Mini Details */}
-                                            <div className="mt-8 pt-8 border-t border-slate-100/50 flex flex-wrap gap-4">
-                                                {order.items.slice(0, 3).map((item, idx) => (
-                                                    <div key={idx} className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-4 py-2 rounded-2xl border border-white shadow-sm hover:shadow-md transition-all cursor-default group/item">
-                                                        <div className="w-8 h-8 rounded-lg bg-slate-100 overflow-hidden border border-slate-50 flex-shrink-0">
-                                                            <img src={item.medicine.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=100"} alt="" className="w-full h-full object-cover group-hover/item:scale-125 transition-transform duration-500" />
+                                            {/* Order Items Preview */}
+                                            <div className="mt-6 pt-6 border-t border-slate-50 flex flex-wrap gap-3">
+                                                {order.items.slice(0, 4).map((item, idx) => (
+                                                    <div key={idx} className="flex items-center gap-3 px-3 py-2 bg-slate-50 rounded-xl">
+                                                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-white border border-slate-100">
+                                                            <img
+                                                                src={item.medicine.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=100"}
+                                                                alt=""
+                                                                className="w-full h-full object-cover"
+                                                            />
                                                         </div>
-                                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{item.medicine.name} <span className="text-sky-500 ml-1">×{item.quantity}</span></p>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-slate-700 line-clamp-1">{item.medicine.name}</p>
+                                                            <p className="text-[11px] text-slate-400">Qty: {item.quantity}</p>
+                                                        </div>
                                                     </div>
                                                 ))}
-                                                {order.items.length > 3 && (
-                                                    <div className="flex items-center px-4 py-2 rounded-2xl bg-slate-50/50 border border-slate-100/50">
-                                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">+{order.items.length - 3} More items</p>
+                                                {order.items.length > 4 && (
+                                                    <div className="flex items-center px-4 py-2 bg-slate-50 rounded-xl">
+                                                        <p className="text-sm font-semibold text-slate-500">+{order.items.length - 4} more</p>
                                                     </div>
                                                 )}
                                             </div>
-
-                                            {/* Subtle aesthetic background */}
-                                            <div className="absolute top-0 right-0 w-64 h-64 bg-slate-100/30 rounded-full blur-3xl -mr-32 -mt-32 -z-0"></div>
                                         </div>
-                                    ))}
-                                </div>
+                                    </div>
+                                ))
                             ) : (
-                                <div className="glass-card rounded-[60px] py-40 text-center relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-b from-sky-50/30 to-transparent -z-10"></div>
-                                    <div className="w-32 h-32 bg-white shadow-2xl rounded-[40px] flex items-center justify-center mx-auto mb-10 border border-white">
+                                <div className="bg-white rounded-3xl p-16 border border-slate-100 text-center">
+                                    <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
                                         <ShoppingBag className="w-12 h-12 text-slate-200" />
                                     </div>
-                                    <h3 className="text-4xl font-black text-slate-900 italic tracking-tight mb-4">No health orders yet</h3>
-                                    <p className="text-slate-500 font-bold max-w-sm mx-auto mb-12 text-lg">Your purchase history will appear here once you start taking care of your health.</p>
-                                    <Link href="/medicines" className="inline-flex px-12 py-5 bg-slate-900 text-white rounded-[24px] font-black italic tracking-widest uppercase text-xs hover:bg-sky-600 transition-all shadow-2xl shadow-slate-200 hover:scale-105 active:scale-95">
-                                        Open Catalog
+                                    <h3 className="text-2xl font-bold text-slate-900 mb-2">No Orders Yet</h3>
+                                    <p className="text-slate-500 mb-8 max-w-md mx-auto">Start shopping and your order history will appear here.</p>
+                                    <Link href="/medicines" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-2xl font-semibold hover:shadow-lg hover:shadow-sky-500/20 transition-all">
+                                        <Sparkles className="w-5 h-5" />
+                                        Browse Medicines
                                     </Link>
                                 </div>
                             )}
-                        </section>
+                        </div>
+                    </>
+                )}
 
-                        <section className="glass-card rounded-[48px] p-12 border-white">
-                            <h2 className="text-2xl font-black text-slate-900 italic mb-10 tracking-tight">Account Configuration</h2>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <button className="flex items-center justify-between p-7 rounded-[32px] bg-[#f8fafc] hover:bg-white hover:shadow-2xl hover:shadow-sky-100 border border-transparent hover:border-slate-50 transition-all text-left group">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-black text-slate-900 uppercase tracking-widest">Security Terminal</p>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Passwords & active sessions</p>
+                {activeTab === "settings" && (
+                    <div className="space-y-6">
+                        {/* Profile Card */}
+                        <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
+                            <div className="p-8 border-b border-slate-100">
+                                <h3 className="text-xl font-bold text-slate-900 mb-1">Profile Information</h3>
+                                <p className="text-slate-500 text-sm">Manage your personal details</p>
+                            </div>
+                            <div className="p-8">
+                                <div className="flex items-center gap-6 mb-8">
+                                    <div className="w-24 h-24 bg-gradient-to-br from-sky-500 to-blue-600 rounded-3xl flex items-center justify-center shadow-lg overflow-hidden">
+                                        {session.user.image ? (
+                                            <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <User className="w-12 h-12 text-white" />
+                                        )}
                                     </div>
-                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover:text-sky-600 transition-all">
-                                        <ChevronRight className="w-6 h-6" />
+                                    <div>
+                                        <h4 className="text-xl font-bold text-slate-900 mb-1">{session.user.name}</h4>
+                                        <p className="text-slate-500">{session.user.email}</p>
+                                        <button className="mt-3 text-sm font-semibold text-sky-600 hover:text-sky-700 flex items-center gap-2">
+                                            <Edit3 className="w-4 h-4" />
+                                            Change Photo
+                                        </button>
                                     </div>
-                                </button>
-                                <button className="flex items-center justify-between p-7 rounded-[32px] bg-[#f8fafc] hover:bg-white hover:shadow-2xl hover:shadow-emerald-100 border border-transparent hover:border-slate-50 transition-all text-left group">
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-black text-slate-900 uppercase tracking-widest">Logistic Hub</p>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Shipping & delivery addresses</p>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="text-sm font-semibold text-slate-700 mb-2 block">Full Name</label>
+                                        <input
+                                            type="text"
+                                            defaultValue={session.user.name || ""}
+                                            className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500/30 text-sm font-medium"
+                                        />
                                     </div>
-                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover:text-emerald-600 transition-all">
-                                        <ChevronRight className="w-6 h-6" />
+                                    <div>
+                                        <label className="text-sm font-semibold text-slate-700 mb-2 block">Email Address</label>
+                                        <input
+                                            type="email"
+                                            defaultValue={session.user.email || ""}
+                                            className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500/30 text-sm font-medium"
+                                            disabled
+                                        />
                                     </div>
+                                    <div>
+                                        <label className="text-sm font-semibold text-slate-700 mb-2 block">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            placeholder="Add phone number"
+                                            defaultValue={(session.user as any).phone || ""}
+                                            className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500/30 text-sm font-medium"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-semibold text-slate-700 mb-2 block">Role</label>
+                                        <input
+                                            type="text"
+                                            value={(session.user as any).role || "Customer"}
+                                            className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none text-sm font-medium"
+                                            disabled
+                                        />
+                                    </div>
+                                </div>
+
+                                <button className="mt-8 px-8 py-4 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-sky-500/20 transition-all">
+                                    Save Changes
                                 </button>
                             </div>
-                        </section>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all cursor-pointer group">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Shield className="w-7 h-7 text-amber-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-900 mb-1">Security Settings</h4>
+                                        <p className="text-sm text-slate-500">Password & authentication</p>
+                                    </div>
+                                    <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all cursor-pointer group">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <MapPin className="w-7 h-7 text-emerald-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-900 mb-1">Saved Addresses</h4>
+                                        <p className="text-sm text-slate-500">Manage delivery locations</p>
+                                    </div>
+                                    <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all cursor-pointer group">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Bell className="w-7 h-7 text-purple-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-900 mb-1">Notifications</h4>
+                                        <p className="text-sm text-slate-500">Email & push preferences</p>
+                                    </div>
+                                    <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all cursor-pointer group">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 bg-sky-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Heart className="w-7 h-7 text-sky-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-900 mb-1">Wishlist</h4>
+                                        <p className="text-sm text-slate-500">Your saved items</p>
+                                    </div>
+                                    <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
