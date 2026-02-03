@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001",
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend-v2-tasinbis-projects.vercel.app",
     fetchOptions: {
         credentials: "include",
     },
