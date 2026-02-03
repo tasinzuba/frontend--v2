@@ -61,8 +61,8 @@ function MedicinesContent() {
                 if (maxPrice) params.append("maxPrice", maxPrice);
 
                 const [medRes, catRes] = await Promise.all([
-                    fetch(`/api/medicines?${params.toString()}`, { credentials: "include" }),
-                    fetch(`/api/medicines/categories`, { credentials: "include" })
+                    fetch(`${backendUrl}/api/medicines?${params.toString()}`, { credentials: "include" }),
+                    fetch(`${backendUrl}/api/medicines/categories`, { credentials: "include" })
                 ]);
 
                 const medData = await medRes.json();
