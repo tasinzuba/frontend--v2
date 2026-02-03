@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Search, Filter, ShoppingCart, Star, ChevronRight, Loader2, Pill, SlidersHorizontal, Grid3X3, List, Sparkles, TrendingUp, Eye, Heart } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -34,7 +34,7 @@ const getStatusText = (stock: number) => {
     return "In Stock";
 };
 
-export default function MedicinesPage() {
+function MedicinesContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { addToCart } = useCart();
@@ -360,5 +360,17 @@ export default function MedicinesPage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function MedicinesPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
+            </div>
+        }>
+            <MedicinesContent />
+        </Suspense>
     );
 }
