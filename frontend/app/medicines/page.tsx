@@ -54,6 +54,8 @@ function MedicinesContent() {
         const fetchData = async () => {
             setLoading(true);
             try {
+                const rawUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+                const cleanBackendUrl = rawUrl.replace(/\/$/, "");
                 const params = new URLSearchParams();
                 if (selectedCategory) params.append("category", selectedCategory);
                 if (searchQuery) params.append("search", searchQuery);
@@ -61,8 +63,8 @@ function MedicinesContent() {
                 if (maxPrice) params.append("maxPrice", maxPrice);
 
                 const [medRes, catRes] = await Promise.all([
-                    fetch(`${backendUrl}/api/medicines?${params.toString()}`, { credentials: "include" }),
-                    fetch(`${backendUrl}/api/medicines/categories`, { credentials: "include" })
+                    fetch(`${cleanBackendUrl}/api/medicines?${params.toString()}`, { credentials: "include" }),
+                    fetch(`${cleanBackendUrl}/api/medicines/categories`, { credentials: "include" })
                 ]);
 
                 const medData = await medRes.json();

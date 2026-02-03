@@ -51,10 +51,11 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+        const rawUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+        const cleanBackendUrl = rawUrl.replace(/\/$/, "");
         const [catRes, medRes] = await Promise.all([
-          fetch(`${backendUrl}/api/medicines/categories`, { credentials: "include" }),
-          fetch(`${backendUrl}/api/medicines?limit=8`, { credentials: "include" })
+          fetch(`${cleanBackendUrl}/api/medicines/categories`, { credentials: "include" }),
+          fetch(`${cleanBackendUrl}/api/medicines?limit=8`, { credentials: "include" })
         ]);
 
         const catJson = await catRes.json();

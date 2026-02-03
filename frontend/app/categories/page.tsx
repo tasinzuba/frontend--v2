@@ -31,8 +31,9 @@ export default function CategoriesPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
-                const response = await fetch(`${backendUrl}/api/medicines/categories`, {
+                const rawUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+                const cleanBackendUrl = rawUrl.replace(/\/$/, "");
+                const response = await fetch(`${cleanBackendUrl}/api/medicines/categories`, {
                     credentials: "include"
                 });
                 const data = await response.json();
