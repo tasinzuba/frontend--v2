@@ -53,8 +53,8 @@ export default function Home() {
       try {
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
         const [catRes, medRes] = await Promise.all([
-          fetch(`${backendUrl}/api/medicines/categories`, { credentials: "include" }),
-          fetch(`${backendUrl}/api/medicines?limit=8`, { credentials: "include" })
+          fetch("/api/medicines/categories", { credentials: "include" }),
+          fetch("/api/medicines?limit=8", { credentials: "include" })
         ]);
 
         const catJson = await catRes.json();

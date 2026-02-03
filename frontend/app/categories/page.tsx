@@ -31,9 +31,10 @@ export default function CategoriesPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
-                const res = await fetch(`${backendUrl}/api/medicines/categories`, { credentials: "include" });
-                const data = await res.json();
+                const response = await fetch("/api/medicines/categories", {
+                    credentials: "include"
+                });
+                const data = await response.json();
                 if (data.success) {
                     setCategories(data.data);
                 } else {
