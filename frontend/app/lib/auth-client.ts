@@ -1,8 +1,12 @@
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || "https://backend-v2-tasinbis-projects.vercel.app",
+    baseURL: typeof window !== 'undefined' 
+        ? window.location.origin  
+        : (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"), 
     fetchOptions: {
         credentials: "include",
-    },
+    }
 });
+
+export const { signIn, signUp, signOut, useSession } = authClient;
