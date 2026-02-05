@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.BACKEND_URL || "https://backend-v2-tasinbis-projects.vercel.app";
 
-async function handler(request: NextRequest, { params }: { params: Promise<{ all: string[] }> }) {
-    const { all } = await params;
-    const path = all.join('/');
-    const url = `${BACKEND_URL}/api/auth/${path}`;
-    
+async function handler(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+    const { path } = await params;
+    const apiPath = path.join('/');
+
+    const searchParams = request.nextUrl.searchParams.toString();
+    const url = searchParams 
+        ? `${BACKEND_URL}/${apiPath}?${searchParams}` 
+        : `${BACKEND_URL}/${apiPath}`;
+
     let body: string | undefined;
     if (request.method !== 'GET' && request.method !== 'HEAD') {
         body = await request.text();
@@ -15,17 +19,14 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ all
     const response = await fetch(url, {
         method: request.method,
         headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': request.headers.get('content-type') || 'application/json',
             'Cookie': request.headers.get('cookie') || '',
-            'User-Agent': request.headers.get('user-agent') || '',
-            'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
         },
         body: body || undefined,
-        credentials: 'include',
     });
 
     const data = await response.text();
-  
+    
     const res = new NextResponse(data, {
         status: response.status,
         headers: {
@@ -33,18 +34,13 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ all
         },
     });
 
-    
     const setCookieHeaders = response.headers.getSetCookie();
-    if (setCookieHeaders && setCookieHeaders.length > 0) {
-        setCookieHeaders.forEach((cookie) => {
-            const modifiedCookie = cookie
-                .replace(/Domain=[^;]+;?\s*/gi, '')
-                .replace(/SameSite=None/gi, 'SameSite=Lax')
-                .replace(/;\s*Secure/gi, process.env.NODE_ENV === 'production' ? '; Secure' : '');
-            
-            res.headers.append('Set-Cookie', modifiedCookie);
-        });
-    }
+    setCookieHeaders?.forEach((cookie) => {
+        const modifiedCookie = cookie
+            .replace(/Domain=[^;]+;?\s*/gi, '')
+            .replace(/SameSite=None/gi, 'SameSite=Lax');
+        res.headers.append('Set-Cookie', modifiedCookie);
+    });
 
     return res;
 }
