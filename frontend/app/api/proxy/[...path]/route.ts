@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.BACKEND_URL || "https://backend-v2-ebon.vercel.app";
 
-async function handler(request: NextRequest, { params }: { params: Promise<{ all: string[] }> }) {
-    const { all } = await params;
-    const apiPath = all.join('/');
-    
+async function handler(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+    const { path } = await params;
+    const apiPath = path.join('/');
+
     const searchParams = request.nextUrl.searchParams.toString();
     const url = searchParams
-        ? `${BACKEND_URL}/api/auth/${apiPath}?${searchParams}`
-        : `${BACKEND_URL}/api/auth/${apiPath}`;
+        ? `${BACKEND_URL}/${apiPath}?${searchParams}`
+        : `${BACKEND_URL}/${apiPath}`;
 
+    // Get request body
     let body: string | undefined;
     if (request.method !== 'GET' && request.method !== 'HEAD') {
         body = await request.text();
