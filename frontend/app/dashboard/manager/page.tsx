@@ -832,7 +832,7 @@ export default function ManagerDashboard() {
                                                         color: "#fff",
                                                         fontSize: "12px",
                                                     }}
-                                                    formatter={(value: number) => [`৳${value.toLocaleString()}`, "Revenue"]}
+                                                    formatter={(value: any) => [`৳${Number(value).toLocaleString()}`, "Revenue"]}
                                                 />
                                                 <Bar dataKey="revenue" fill="#0284c7" radius={[8, 8, 0, 0]} />
                                             </BarChart>
