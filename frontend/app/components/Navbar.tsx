@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { authClient } from "@/app/lib/auth-client";
 import { useRouter, usePathname } from "next/navigation";
-import { User, LogOut, ShoppingCart, Menu, X, LayoutDashboard, Pill, ChevronDown, Heart, Package, Settings, Bell, Search } from "lucide-react";
+import { User, LogOut, ShoppingCart, Menu, X, LayoutDashboard, Pill, ChevronDown, Heart, Package, Settings, Bell, Search, Grid3X3, Info, Phone, HelpCircle, FileText } from "lucide-react";
 import { useCart } from "@/app/context/CartContext";
 import Logo from "./Logo";
 
@@ -13,6 +13,7 @@ export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [showMegaMenu, setShowMegaMenu] = useState(false);
     const { data: session, isPending } = authClient.useSession();
     const router = useRouter();
     const pathname = usePathname();
@@ -49,7 +50,19 @@ export default function Navbar() {
     const navLinks = [
         { name: "Home", href: "/" },
         { name: "Medicines", href: "/medicines" },
-        { name: "Categories", href: "/categories" }
+        { name: "Categories", href: "/categories" },
+        { name: "About", href: "/about" },
+        { name: "Contact", href: "/contact" },
+        { name: "FAQ", href: "/faq" }
+    ];
+
+    const megaMenuItems = [
+        { icon: Pill, title: "All Medicines", desc: "Browse our full catalog", href: "/medicines" },
+        { icon: Grid3X3, title: "Categories", desc: "Shop by category", href: "/categories" },
+        { icon: Heart, title: "Health & Wellness", desc: "Supplements & vitamins", href: "/medicines?category=wellness" },
+        { icon: Package, title: "New Arrivals", desc: "Latest products added", href: "/medicines?sort=newest" },
+        { icon: Info, title: "About Us", desc: "Learn about MediStore", href: "/about" },
+        { icon: HelpCircle, title: "FAQ & Help", desc: "Common questions", href: "/faq" },
     ];
 
     const isActive = (href: string) => pathname === href;
@@ -69,7 +82,7 @@ export default function Navbar() {
 
                         {/* Desktop Navigation */}
                         <div className="hidden md:flex items-center gap-1 bg-slate-50/80 backdrop-blur rounded-2xl p-1.5">
-                            {navLinks.map((link) => (
+                            {navLinks.slice(0, 3).map((link) => (
                                 <Link
                                     key={link.name}
                                     href={link.href}
@@ -81,6 +94,50 @@ export default function Navbar() {
                                     {link.name}
                                 </Link>
                             ))}
+                            {/* Mega Menu Trigger */}
+                            <div className="relative"
+                                onMouseEnter={() => setShowMegaMenu(true)}
+                                onMouseLeave={() => setShowMegaMenu(false)}
+                            >
+                                <button className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${showMegaMenu ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900 hover:bg-white/50"}`}>
+                                    More
+                                    <ChevronDown className={`w-4 h-4 transition-transform ${showMegaMenu ? "rotate-180" : ""}`} />
+                                </button>
+
+                                {/* Mega Menu Dropdown */}
+                                {showMegaMenu && (
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 z-50">
+                                        <div className="w-[520px] bg-white rounded-2xl border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
+                                            <div className="p-2 grid grid-cols-2 gap-1">
+                                                {megaMenuItems.map((item, i) => (
+                                                    <Link
+                                                        key={i}
+                                                        href={item.href}
+                                                        onClick={() => setShowMegaMenu(false)}
+                                                        className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-all duration-300 group"
+                                                    >
+                                                        <div className="w-11 h-11 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 group-hover:scale-110 transition-transform flex-shrink-0">
+                                                            <item.icon className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-sm text-slate-900">{item.title}</p>
+                                                            <p className="text-xs text-slate-400">{item.desc}</p>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-xs text-slate-500 font-medium">Need help? <Link href="/contact" className="text-sky-600 font-semibold hover:text-sky-700">Contact Us</Link></p>
+                                                    <Link href="/about" className="text-xs text-sky-600 font-semibold hover:text-sky-700 flex items-center gap-1">
+                                                        Learn More <ChevronDown className="w-3 h-3 -rotate-90" />
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Right Section */}
@@ -88,14 +145,14 @@ export default function Navbar() {
                             {/* Search Button */}
                             <button
                                 onClick={() => setShowSearch(true)}
-                                className="w-10 h-10 bg-slate-50 hover:bg-white rounded-xl flex items-center justify-center text-slate-400 hover:text-sky-600 transition-all hover:shadow-md border border-transparent hover:border-slate-100"
+                                className="w-10 h-10 bg-slate-50 hover:bg-white rounded-xl flex items-center justify-center text-slate-400 hover:text-sky-600 transition-all hover:shadow-md border border-transparent hover:border-slate-100 active:scale-95"
                             >
                                 <Search className="w-5 h-5" />
                             </button>
 
                             {/* Cart */}
                             <Link href="/cart" className="relative group">
-                                <div className="w-10 h-10 bg-slate-50 group-hover:bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-sky-600 transition-all group-hover:shadow-md border border-transparent group-hover:border-slate-100">
+                                <div className="w-10 h-10 bg-slate-50 group-hover:bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-sky-600 transition-all group-hover:shadow-md border border-transparent group-hover:border-slate-100 active:scale-95">
                                     <ShoppingCart className="w-5 h-5" />
                                 </div>
                                 {cartCount > 0 && (
@@ -234,7 +291,7 @@ export default function Navbar() {
                             </form>
 
                             {/* Nav Links */}
-                            <div className="space-y-1 mb-4">
+                            <div className="space-y-1 mb-4 animate-fade-in">
                                 {navLinks.map((link) => (
                                     <Link
                                         key={link.name}

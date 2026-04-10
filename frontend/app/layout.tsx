@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className={`${poppins.className} antialiased bg-white`}>
         <CartProvider>
           <Navbar />
-          <main className="pt-16">
+          <main className="pt-16 animate-fade-in">
             {children}
           </main>
           <Footer />

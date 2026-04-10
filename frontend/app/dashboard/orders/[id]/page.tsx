@@ -118,7 +118,7 @@ export default function OrderDetailPage() {
         switch (status) {
             case "DELIVERED": return "bg-emerald-50 text-emerald-600 border-emerald-100";
             case "SHIPPED": return "bg-blue-50 text-blue-600 border-blue-100";
-            case "PROCESSING": return "bg-orange-50 text-orange-600 border-orange-100";
+            case "PROCESSING": return "bg-amber-50 text-amber-600 border-amber-100";
             case "CANCELLED": return "bg-red-50 text-red-600 border-red-100";
             case "PENDING": return "bg-sky-50 text-sky-600 border-sky-100";
             default: return "bg-slate-50 text-slate-600 border-slate-100";
@@ -227,7 +227,7 @@ export default function OrderDetailPage() {
                                 </div>
                                 <div className="flex items-center justify-between text-xs">
                                     <span className="text-slate-400 uppercase tracking-widest">Payment</span>
-                                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${order.paymentStatus === "PAID" ? "bg-emerald-500/20 text-emerald-400" : "bg-orange-500/20 text-orange-400"}`}>
+                                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold ${order.paymentStatus === "PAID" ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"}`}>
                                         {order.paymentStatus}
                                     </span>
                                 </div>

@@ -122,7 +122,7 @@ export default function MedicineDetailPage() {
                                 <img
                                     src={medicine.image}
                                     alt={medicine.name}
-                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700"
+                                    className="w-full h-full object-contain img-zoom"
                                 />
                             ) : (
                                 <Pill className="w-32 h-32 text-slate-100" />
@@ -138,7 +138,7 @@ export default function MedicineDetailPage() {
                         {/* Feature Cards */}
                         <div className="grid grid-cols-2 gap-6 mt-8">
                             <div className="bg-white p-6 rounded-[32px] border border-slate-50 shadow-sm flex items-center gap-5 group">
-                                <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-all">
+                                <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-600 group-hover:bg-sky-600 group-hover:text-white transition-all duration-300">
                                     <Truck className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -147,7 +147,7 @@ export default function MedicineDetailPage() {
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-[32px] border border-slate-50 shadow-sm flex items-center gap-5 group">
-                                <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
                                     <ShieldCheck className="w-6 h-6" />
                                 </div>
                                 <div>
@@ -189,7 +189,7 @@ export default function MedicineDetailPage() {
                         <div className="flex flex-col sm:flex-row items-center gap-6 pt-6 border-t border-slate-100">
                             <button
                                 onClick={() => addToCart(medicine)}
-                                className="w-full h-14 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-2xl font-semibold text-sm hover:shadow-xl hover:shadow-sky-500/20 transition-all flex items-center justify-center gap-3 active:scale-95"
+                                className="w-full h-14 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-2xl font-semibold text-sm hover:shadow-xl hover:shadow-sky-500/20 transition-all flex items-center justify-center gap-3 active:scale-[0.97]"
                             >
                                 <ShoppingCart className="w-5 h-5" />
                                 Add to Cart
@@ -243,7 +243,7 @@ export default function MedicineDetailPage() {
                             {medicine.reviews?.length > 0 ? (
                                 <div className="space-y-8">
                                     {medicine.reviews.map((rev, i) => (
-                                        <div key={i} className="p-8 bg-white rounded-[32px] border border-slate-50 shadow-sm hover:shadow-md transition-all">
+                                        <div key={i} className="p-8 bg-white rounded-[32px] border border-slate-50 shadow-sm hover:shadow-md transition-all duration-300">
                                             <div className="flex items-center justify-between mb-6">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">
@@ -287,7 +287,7 @@ export default function MedicineDetailPage() {
                                                     key={s}
                                                     type="button"
                                                     onClick={() => setRating(s)}
-                                                    className={`w-10 h-10 rounded-xl transition-all flex items-center justify-center ${rating >= s ? "bg-amber-400 text-amber-900" : "bg-white/5 text-slate-500 hover:bg-white/10"}`}
+                                                    className={`w-10 h-10 rounded-xl transition-all duration-200 flex items-center justify-center ${rating >= s ? "bg-amber-400 text-amber-900" : "bg-white/5 text-slate-500 hover:bg-white/10"}`}
                                                 >
                                                     <Star className={`w-5 h-5 ${rating >= s ? "fill-current" : ""}`} />
                                                 </button>
@@ -325,7 +325,7 @@ export default function MedicineDetailPage() {
                     <div className="mt-32 border-t border-slate-100 pt-20">
                         <div className="flex items-center justify-between mb-12">
                             <div>
-                                <p className="text-sm text-emerald-600 font-medium mb-1">Similar Products</p>
+                                <p className="text-sm text-sky-600 font-medium mb-1">Similar Products</p>
                                 <h2 className="text-2xl font-bold text-slate-900">You May Also Like</h2>
                             </div>
                             <Link href="/medicines" className="text-sm text-slate-500 hover:text-sky-600 transition-colors flex items-center gap-1">
@@ -333,11 +333,11 @@ export default function MedicineDetailPage() {
                             </Link>
                         </div>
 
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 stagger-children">
                             {relatedMedicines.map((med) => (
-                                <Link key={med.id} href={`/medicines/${med.id}`} className="group bg-white p-6 rounded-[32px] border border-slate-50 hover:shadow-lg transition-all shadow-sm">
+                                <Link key={med.id} href={`/medicines/${med.id}`} className="group bg-white p-6 rounded-[32px] border border-slate-50 hover:shadow-lg transition-all duration-300 shadow-sm">
                                     <div className="aspect-square bg-slate-50 rounded-2xl overflow-hidden mb-6">
-                                        <img src={med.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400"} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        <img src={med.image || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=400"} alt="" className="w-full h-full object-cover img-zoom" />
                                     </div>
                                     <h3 className="font-bold text-slate-800 group-hover:text-sky-600 transition-colors mb-2 line-clamp-1 truncate tracking-tight">{med.name}</h3>
                                     <p className="text-xl font-bold text-slate-900 tracking-tighter">৳{med.price.toFixed(2)}</p>

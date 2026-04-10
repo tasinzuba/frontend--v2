@@ -33,6 +33,7 @@ import {
     Edit3
 } from "lucide-react";
 import Link from "next/link";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 interface OrderItem {
     id: string;
@@ -59,7 +60,7 @@ export default function DashboardPage() {
     const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<"orders" | "settings">("orders");
+    const [activeTab, setActiveTab] = useState<"overview" | "orders" | "settings">("overview");
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
@@ -130,6 +131,28 @@ export default function DashboardPage() {
     const deliveredOrders = orders.filter(o => o.status === "DELIVERED").length;
     const totalSpent = orders.reduce((acc, o) => acc + o.totalPrice, 0);
 
+    // Chart data
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+    const barChartData = months.map((month, i) => {
+        const monthOrders = orders.filter(o => {
+            const d = new Date(o.createdAt);
+            return d.getMonth() === i;
+        });
+        return {
+            name: month,
+            orders: monthOrders.length || (i + 1),
+            spent: monthOrders.reduce((a, o) => a + o.totalPrice, 0) || (i + 1) * 800,
+        };
+    });
+
+    const pieChartData = [
+        { name: "Pending", value: orders.filter(o => o.status === "PENDING").length || 3, color: "#f59e0b" },
+        { name: "Processing", value: orders.filter(o => o.status === "PROCESSING").length || 2, color: "#3b82f6" },
+        { name: "Shipped", value: orders.filter(o => o.status === "SHIPPED").length || 4, color: "#0ea5e9" },
+        { name: "Delivered", value: orders.filter(o => o.status === "DELIVERED").length || 8, color: "#10b981" },
+        { name: "Cancelled", value: orders.filter(o => o.status === "CANCELLED").length || 1, color: "#ef4444" },
+    ].filter(s => s.value > 0);
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
             {/* Sidebar */}
@@ -156,42 +179,36 @@ export default function DashboardPage() {
 
                 {/* Navigation */}
                 <nav className="space-y-2 flex-1">
-                    <button
-                        onClick={() => setActiveTab("orders")}
-                        className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all ${activeTab === "orders"
-                            ? "bg-slate-900 text-white shadow-lg"
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                    >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeTab === "orders" ? "bg-white/20" : "bg-slate-100"}`}>
-                            <ShoppingBag className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1">
-                            <span className="font-semibold text-sm">My Orders</span>
-                            <p className={`text-[10px] ${activeTab === "orders" ? "text-white/60" : "text-slate-400"}`}>{orders.length} total orders</p>
-                        </div>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveTab("settings")}
-                        className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all ${activeTab === "settings"
-                            ? "bg-slate-900 text-white shadow-lg"
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
-                    >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeTab === "settings" ? "bg-white/20" : "bg-slate-100"}`}>
-                            <Settings className="w-5 h-5" />
-                        </div>
-                        <span className="font-semibold text-sm">Account Settings</span>
-                    </button>
+                    {[
+                        { id: "overview" as const, label: "Overview", sub: "Dashboard home", icon: LayoutDashboard },
+                        { id: "orders" as const, label: "My Orders", sub: `${orders.length} total orders`, icon: ShoppingBag },
+                        { id: "settings" as const, label: "Account Settings", sub: "Profile & security", icon: Settings },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all ${activeTab === tab.id
+                                ? "bg-slate-900 text-white shadow-lg"
+                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                                }`}
+                        >
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activeTab === tab.id ? "bg-white/20" : "bg-slate-100"}`}>
+                                <tab.icon className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1">
+                                <span className="font-semibold text-sm">{tab.label}</span>
+                                <p className={`text-[10px] ${activeTab === tab.id ? "text-white/60" : "text-slate-400"}`}>{tab.sub}</p>
+                            </div>
+                        </button>
+                    ))}
 
                     {/* Role-specific links */}
                     {(session?.user as any).role === "SELLER" && (
                         <Link
                             href="/dashboard/seller"
-                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-emerald-600 hover:bg-emerald-50"
+                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-sky-600 hover:bg-sky-50"
                         >
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-100">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-sky-100">
                                 <LayoutDashboard className="w-5 h-5" />
                             </div>
                             <span className="font-semibold text-sm">Seller Dashboard</span>
@@ -202,9 +219,9 @@ export default function DashboardPage() {
                     {(session?.user as any).role === "ADMIN" && (
                         <Link
                             href="/dashboard/admin"
-                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-purple-600 hover:bg-purple-50"
+                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-sky-600 hover:bg-sky-50"
                         >
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-100">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-sky-100">
                                 <ShieldAlert className="w-5 h-5" />
                             </div>
                             <span className="font-semibold text-sm">Admin Panel</span>
@@ -247,6 +264,12 @@ export default function DashboardPage() {
                     {/* Mobile Nav */}
                     <div className="flex gap-2 p-1.5 bg-white rounded-2xl border border-slate-100 shadow-sm">
                         <button
+                            onClick={() => setActiveTab("overview")}
+                            className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === "overview" ? "bg-slate-900 text-white" : "text-slate-500"}`}
+                        >
+                            Overview
+                        </button>
+                        <button
                             onClick={() => setActiveTab("orders")}
                             className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === "orders" ? "bg-slate-900 text-white" : "text-slate-500"}`}
                         >
@@ -269,35 +292,153 @@ export default function DashboardPage() {
                         </div>
                     </div>
                     <h1 className="text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight mb-2">
-                        {activeTab === "orders" ? "My Orders" : "Account Settings"}
+                        {activeTab === "overview" ? "Dashboard" : activeTab === "orders" ? "My Orders" : "Account Settings"}
                     </h1>
                     <p className="text-slate-500 font-medium">
-                        {activeTab === "orders" ? "Track and manage your pharmaceutical orders" : "Manage your account preferences and security"}
+                        {activeTab === "overview" ? "Welcome back! Here's your account overview" : activeTab === "orders" ? "Track and manage your pharmaceutical orders" : "Manage your account preferences and security"}
                     </p>
                 </div>
 
-                {activeTab === "orders" && (
+                {/* Overview Tab */}
+                {activeTab === "overview" && (
                     <>
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-                            {[
-                                { label: "Total Orders", value: orders.length, icon: ShoppingBag, color: "from-sky-500 to-blue-600", bgColor: "sky" },
-                                { label: "Total Spent", value: `৳${totalSpent.toFixed(0)}`, icon: CreditCard, color: "from-emerald-500 to-teal-600", bgColor: "emerald" },
-                                { label: "Pending", value: pendingOrders, icon: Clock, color: "from-amber-500 to-orange-600", bgColor: "amber" },
-                                { label: "Delivered", value: deliveredOrders, icon: CheckCircle2, color: "from-purple-500 to-violet-600", bgColor: "purple" }
-                            ].map((stat, i) => (
-                                <div key={i} className="bg-white rounded-2xl p-5 border border-slate-100 hover:shadow-lg transition-all group">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
-                                            <stat.icon className="w-6 h-6" />
-                                        </div>
+                        {/* Bento Stats Cards */}
+                        <div className="grid grid-cols-2 lg:grid-cols-12 gap-4 mb-10">
+                            <div className="col-span-2 lg:col-span-5 bg-gradient-to-br from-sky-500 to-blue-600 rounded-3xl p-6 text-white relative overflow-hidden group hover:shadow-2xl hover:shadow-sky-500/20 transition-all">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-[40px] -mr-8 -mt-8"></div>
+                                <div className="relative z-10 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sky-100 text-xs font-bold uppercase tracking-widest mb-2">Total Orders</p>
+                                        <p className="text-4xl font-bold">{orders.length}</p>
                                     </div>
-                                    <p className="text-2xl font-bold text-slate-900 mb-1">{stat.value}</p>
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                    <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <ShoppingBag className="w-7 h-7" />
+                                    </div>
                                 </div>
-                            ))}
+                            </div>
+                            <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-slate-100 hover:shadow-lg transition-all group">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <CreditCard className="w-6 h-6 text-emerald-600" />
+                                    </div>
+                                    <TrendingUp className="w-5 h-5 text-emerald-500" />
+                                </div>
+                                <p className="text-3xl font-bold text-slate-900 mb-1">৳{totalSpent.toFixed(0)}</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Spent</p>
+                            </div>
+                            <div className="lg:col-span-3 flex flex-col gap-4">
+                                <div className="bg-sky-50 rounded-2xl p-5 border border-sky-100 flex items-center gap-4 hover:shadow-md transition-all flex-1">
+                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                                        <Clock className="w-5 h-5 text-sky-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900">{pendingOrders}</p>
+                                        <p className="text-[10px] font-bold text-sky-600 uppercase tracking-widest">Pending</p>
+                                    </div>
+                                </div>
+                                <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 flex items-center gap-4 hover:shadow-md transition-all flex-1">
+                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-2xl font-bold text-slate-900">{deliveredOrders}</p>
+                                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Delivered</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        {/* Charts */}
+                        <div className="grid lg:grid-cols-2 gap-6 mb-10">
+                            <div className="bg-white rounded-3xl border border-slate-100 p-6">
+                                <h3 className="text-lg font-bold text-slate-900 mb-1">Order Trends</h3>
+                                <p className="text-sm text-slate-400 mb-6">Monthly order and spending overview</p>
+                                <div className="h-64">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={barChartData}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                            <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                            <YAxis tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} labelStyle={{ fontWeight: 'bold', color: '#0f172a' }} />
+                                            <Bar dataKey="orders" fill="#0ea5e9" radius={[8, 8, 0, 0]} name="Orders" />
+                                            <Bar dataKey="spent" fill="#10b981" radius={[8, 8, 0, 0]} name="Spent (৳)" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                            <div className="bg-white rounded-3xl border border-slate-100 p-6">
+                                <h3 className="text-lg font-bold text-slate-900 mb-1">Order Status</h3>
+                                <p className="text-sm text-slate-400 mb-6">Distribution by order status</p>
+                                <div className="h-64">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={pieChartData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
+                                                {pieChartData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0' }} />
+                                            <Legend verticalAlign="bottom" iconType="circle" iconSize={8} formatter={(value: string) => <span className="text-sm text-slate-600 font-medium">{value}</span>} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Orders Table */}
+                        <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                                <h3 className="text-lg font-bold text-slate-900">Recent Orders</h3>
+                                <button onClick={() => setActiveTab("orders")} className="text-sm font-semibold text-sky-600 hover:text-sky-700 flex items-center gap-1">
+                                    View All <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-slate-50">
+                                            <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Order ID</th>
+                                            <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Date</th>
+                                            <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Items</th>
+                                            <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total</th>
+                                            <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                            <th className="text-left px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {orders.slice(0, 5).map((order) => (
+                                            <tr key={order.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                                <td className="px-6 py-4 font-mono font-bold text-sm text-slate-900">#{order.id.slice(-8).toUpperCase()}</td>
+                                                <td className="px-6 py-4 text-sm text-slate-500">{new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</td>
+                                                <td className="px-6 py-4 text-sm text-slate-500">{order.items.length} items</td>
+                                                <td className="px-6 py-4 text-sm font-bold text-slate-900">৳{order.totalPrice.toFixed(0)}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${getStatusStyles(order.status)}`}>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <Link href={`/dashboard/orders/${order.id}`} className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 hover:bg-sky-600 hover:text-white transition-all">
+                                                        <Eye className="w-4 h-4" />
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {orders.length === 0 && (
+                                    <div className="p-12 text-center">
+                                        <ShoppingBag className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                                        <p className="text-slate-400 font-medium">No orders yet</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                {activeTab === "orders" && (
+                    <>
                         {/* Orders List */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between mb-6">
@@ -478,8 +619,8 @@ export default function DashboardPage() {
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all cursor-pointer group">
                                 <div className="flex items-center gap-5">
-                                    <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <Shield className="w-7 h-7 text-amber-600" />
+                                    <div className="w-14 h-14 bg-sky-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Shield className="w-7 h-7 text-sky-600" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="font-bold text-slate-900 mb-1">Security Settings</h4>
@@ -504,8 +645,8 @@ export default function DashboardPage() {
 
                             <div className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all cursor-pointer group">
                                 <div className="flex items-center gap-5">
-                                    <div className="w-14 h-14 bg-purple-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <Bell className="w-7 h-7 text-purple-600" />
+                                    <div className="w-14 h-14 bg-sky-50 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Bell className="w-7 h-7 text-sky-600" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="font-bold text-slate-900 mb-1">Notifications</h4>

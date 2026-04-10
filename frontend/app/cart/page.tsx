@@ -95,7 +95,7 @@ export default function CartPage() {
                 {cart.length > 0 ? (
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Cart Items */}
-                        <div className="lg:col-span-2 space-y-4">
+                        <div className="lg:col-span-2 space-y-4 stagger-children">
                             {/* Table Header */}
                             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-slate-50 rounded-2xl">
                                 <div className="col-span-6 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Product</div>
@@ -106,7 +106,7 @@ export default function CartPage() {
 
                             {/* Items */}
                             {cart.map((item) => (
-                                <div key={item.id} className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all group">
+                                <div key={item.id} className="bg-white rounded-3xl border border-slate-100 p-6 hover:shadow-lg transition-all duration-300 group">
                                     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                                         {/* Product */}
                                         <div className="md:col-span-6 flex items-center gap-5">
@@ -124,7 +124,7 @@ export default function CartPage() {
                                                 <p className="text-sm text-slate-400 mt-1">Unit Price: ৳{item.price.toFixed(0)}</p>
                                                 <button
                                                     onClick={() => removeFromCart(item.id)}
-                                                    className="mt-2 text-[11px] font-bold text-red-500 hover:text-red-600 uppercase tracking-widest flex items-center gap-1.5"
+                                                    className="mt-2 text-[11px] font-bold text-red-500 hover:text-red-600 uppercase tracking-widest flex items-center gap-1.5 transition-all duration-200"
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                     Remove
@@ -137,14 +137,14 @@ export default function CartPage() {
                                             <div className="flex items-center bg-slate-50 rounded-xl p-1.5 border border-slate-100">
                                                 <button
                                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                    className="w-9 h-9 flex items-center justify-center bg-white rounded-lg text-slate-400 hover:text-slate-600 transition-colors shadow-sm"
+                                                    className="w-9 h-9 flex items-center justify-center bg-white rounded-lg text-slate-400 hover:text-slate-600 active:scale-90 transition-all duration-200 shadow-sm"
                                                 >
                                                     <Minus className="w-4 h-4" />
                                                 </button>
                                                 <span className="w-12 text-center font-bold text-slate-900">{item.quantity}</span>
                                                 <button
                                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                    className="w-9 h-9 flex items-center justify-center bg-white rounded-lg text-slate-400 hover:text-slate-600 transition-colors shadow-sm"
+                                                    className="w-9 h-9 flex items-center justify-center bg-white rounded-lg text-slate-400 hover:text-slate-600 active:scale-90 transition-all duration-200 shadow-sm"
                                                 >
                                                     <Plus className="w-4 h-4" />
                                                 </button>
@@ -212,7 +212,7 @@ export default function CartPage() {
                                     disabled={cart.length === 0 || loading}
                                     className={`w-full py-4 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${cart.length === 0 || loading
                                         ? "bg-slate-100 text-slate-300 cursor-not-allowed"
-                                        : "bg-gradient-to-r from-sky-600 to-blue-600 text-white hover:shadow-lg hover:shadow-sky-500/30"
+                                        : "bg-gradient-to-r from-sky-600 to-blue-600 text-white hover:shadow-lg hover:shadow-sky-500/30 active:scale-[0.97]"
                                         }`}
                                 >
                                     {loading ? (
@@ -236,7 +236,7 @@ export default function CartPage() {
                                     {[
                                         { icon: Truck, text: "Fast Delivery", color: "text-sky-500" },
                                         { icon: Package, text: "Quality Guaranteed", color: "text-emerald-500" },
-                                        { icon: CheckCircle2, text: "Easy Returns", color: "text-purple-500" }
+                                        { icon: CheckCircle2, text: "Easy Returns", color: "text-sky-500" }
                                     ].map((feature, i) => (
                                         <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
                                             <feature.icon className={`w-5 h-5 ${feature.color}`} />

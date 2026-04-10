@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { Search, Filter, ShoppingCart, Star, ChevronRight, Loader2, Pill, SlidersHorizontal, Grid3X3, List, Sparkles, TrendingUp, Eye, Heart } from "lucide-react";
+import { Search, Filter, ShoppingCart, Star, ChevronRight, ChevronLeft, Loader2, Pill, SlidersHorizontal, Grid3X3, List, Sparkles, TrendingUp, Eye, Heart, ArrowUpDown } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCart } from "@/app/context/CartContext";
@@ -47,6 +47,9 @@ function MedicinesContent() {
     const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
     const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [sortBy, setSortBy] = useState(searchParams.get("sort") || "");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
@@ -82,6 +85,24 @@ function MedicinesContent() {
         fetchData();
     }, [selectedCategory, searchQuery, minPrice, maxPrice, backendUrl]);
 
+    // Sort medicines
+    const sortedMedicines = [...medicines].sort((a, b) => {
+        switch (sortBy) {
+            case "price-low": return a.price - b.price;
+            case "price-high": return b.price - a.price;
+            case "name-asc": return a.name.localeCompare(b.name);
+            case "name-desc": return b.name.localeCompare(a.name);
+            default: return 0;
+        }
+    });
+
+    // Pagination
+    const totalPages = Math.ceil(sortedMedicines.length / itemsPerPage);
+    const paginatedMedicines = sortedMedicines.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    // Reset page when filters change
+    useEffect(() => { setCurrentPage(1); }, [selectedCategory, searchQuery, minPrice, maxPrice, sortBy]);
+
     const handleCategoryChange = (catId: string) => {
         setSelectedCategory(catId);
         const params = new URLSearchParams(searchParams.toString());
@@ -112,6 +133,23 @@ function MedicinesContent() {
                             </p>
                         </div>
 
+                        <div className="flex items-center gap-4">
+                        {/* Sort Dropdown */}
+                        <div className="relative">
+                            <ArrowUpDown className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="pl-11 pr-4 py-3 bg-white rounded-xl border border-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition-all font-medium text-sm appearance-none cursor-pointer shadow-sm"
+                            >
+                                <option value="">Default Sort</option>
+                                <option value="price-low">Price: Low to High</option>
+                                <option value="price-high">Price: High to Low</option>
+                                <option value="name-asc">Name: A to Z</option>
+                                <option value="name-desc">Name: Z to A</option>
+                            </select>
+                        </div>
+
                         {/* View Toggle */}
                         <div className="flex items-center gap-2 p-1.5 bg-white rounded-2xl border border-slate-100 shadow-sm">
                             <button
@@ -126,6 +164,7 @@ function MedicinesContent() {
                             >
                                 <List className="w-5 h-5" />
                             </button>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -183,7 +222,7 @@ function MedicinesContent() {
 
                     {/* Active Filters */}
                     {(searchQuery || selectedCategory || minPrice || maxPrice) && (
-                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-50">
+                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-50 animate-fade-in">
                             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Active:</span>
                             {searchQuery && (
                                 <span className="px-3 py-1.5 bg-sky-50 text-sky-600 text-[11px] font-bold rounded-lg border border-sky-100">
@@ -208,30 +247,33 @@ function MedicinesContent() {
                 {/* Results Count */}
                 <div className="flex items-center justify-between mb-8">
                     <p className="text-slate-500 font-medium">
-                        Showing <span className="font-bold text-slate-900">{medicines.length}</span> products
+                        Showing <span className="font-bold text-slate-900">{paginatedMedicines.length}</span> of <span className="font-bold text-slate-900">{medicines.length}</span> products
                     </p>
+                    {totalPages > 1 && (
+                        <p className="text-slate-400 text-sm font-medium">Page {currentPage} of {totalPages}</p>
+                    )}
                 </div>
 
                 {/* Grid */}
                 {loading ? (
                     <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}>
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                            <div key={i} className="bg-white rounded-3xl p-6 border border-slate-100 animate-pulse">
+                            <div key={i} className="bg-white rounded-3xl p-6 border border-slate-100 animate-pulse shimmer">
                                 <div className="aspect-square bg-slate-100 rounded-2xl mb-6"></div>
                                 <div className="h-6 bg-slate-100 rounded-lg w-3/4 mb-3"></div>
                                 <div className="h-4 bg-slate-100 rounded-lg w-1/2"></div>
                             </div>
                         ))}
                     </div>
-                ) : medicines.length > 0 ? (
-                    <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}>
-                        {medicines.map((med) => (
+                ) : paginatedMedicines.length > 0 ? (
+                    <div className={`grid gap-6 stagger-children ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"}`}>
+                        {paginatedMedicines.map((med) => (
                             viewMode === "grid" ? (
-                                <div key={med.id} className="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-1">
+                                <div key={med.id} className="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 hover:-translate-y-1.5">
                                     {/* Image */}
                                     <Link href={`/medicines/${med.id}`} className="relative block aspect-square overflow-hidden bg-slate-50">
                                         {med.image ? (
-                                            <img src={med.image} alt={med.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                            <img src={med.image} alt={med.name} className="w-full h-full object-cover img-zoom" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <Pill className="w-16 h-16 text-slate-200" />
@@ -250,7 +292,7 @@ function MedicinesContent() {
 
                                         {/* Quick View */}
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <Link href={`/medicines/${med.id}`} className="px-5 py-2.5 bg-white rounded-xl text-slate-900 text-sm font-semibold flex items-center gap-2 hover:bg-sky-500 hover:text-white transition-all">
+                                            <Link href={`/medicines/${med.id}`} className="px-5 py-2.5 bg-white rounded-xl text-slate-900 text-sm font-semibold flex items-center gap-2 hover:bg-sky-500 hover:text-white transition-all duration-300">
                                                 <Eye className="w-4 h-4" />
                                                 Quick View
                                             </Link>
@@ -302,10 +344,10 @@ function MedicinesContent() {
                                 </div>
                             ) : (
                                 // List View
-                                <div key={med.id} className="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all p-6 flex gap-6">
+                                <div key={med.id} className="group bg-white rounded-3xl border border-slate-100 overflow-hidden hover:shadow-xl transition-all duration-500 p-6 flex gap-6">
                                     <Link href={`/medicines/${med.id}`} className="relative w-40 h-40 rounded-2xl overflow-hidden bg-slate-50 flex-shrink-0">
                                         {med.image ? (
-                                            <img src={med.image} alt={med.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                            <img src={med.image} alt={med.name} className="w-full h-full object-cover img-zoom" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
                                                 <Pill className="w-12 h-12 text-slate-200" />
@@ -357,6 +399,38 @@ function MedicinesContent() {
                             className="px-8 py-3 bg-slate-900 text-white rounded-xl font-semibold text-sm hover:bg-sky-600 transition-colors"
                         >
                             Clear Filters
+                        </button>
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 mt-12">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="w-11 h-11 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`w-11 h-11 rounded-xl text-sm font-bold transition-all active:scale-95 ${page === currentPage
+                                    ? "bg-sky-600 text-white shadow-lg shadow-sky-500/30"
+                                    : "border border-slate-200 text-slate-500 hover:bg-slate-50"
+                                }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="w-11 h-11 rounded-xl border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            <ChevronRight className="w-5 h-5" />
                         </button>
                     </div>
                 )}

@@ -378,10 +378,10 @@ export default function AdminDashboard() {
                                 {/* Stats Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                                     {[
-                                        { label: "Total Revenue", val: `৳${stats?.revenue.toFixed(0)}`, icon: DollarSign, color: "from-emerald-500 to-teal-600", bgColor: "emerald", trend: "+12.5%", trendUp: true },
-                                        { label: "Active Users", val: stats?.users, icon: Users, color: "from-sky-500 to-blue-600", bgColor: "sky", trend: "+8 new", trendUp: true },
-                                        { label: "Total Products", val: stats?.medicines, icon: Package, color: "from-purple-500 to-violet-600", bgColor: "purple", trend: "Stable", trendUp: false },
-                                        { label: "Total Orders", val: stats?.orders, icon: ShoppingBag, color: "from-orange-500 to-amber-600", bgColor: "orange", trend: "+18%", trendUp: true }
+                                        { label: "Total Revenue", val: `৳${stats?.revenue.toFixed(0)}`, icon: DollarSign, color: "from-emerald-500 to-emerald-600", bgColor: "emerald", trend: "+12.5%", trendUp: true },
+                                        { label: "Active Users", val: stats?.users, icon: Users, color: "from-sky-500 to-sky-600", bgColor: "sky", trend: "+8 new", trendUp: true },
+                                        { label: "Total Products", val: stats?.medicines, icon: Package, color: "from-sky-600 to-sky-700", bgColor: "sky", trend: "Stable", trendUp: false },
+                                        { label: "Total Orders", val: stats?.orders, icon: ShoppingBag, color: "from-slate-600 to-slate-700", bgColor: "slate", trend: "+18%", trendUp: true }
                                     ].map((stat, i) => (
                                         <div key={i} className="bg-white rounded-3xl p-6 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group relative overflow-hidden">
                                             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity rounded-full -mr-10 -mt-10" style={{ backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))` }}></div>

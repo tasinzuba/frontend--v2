@@ -47,9 +47,9 @@ export default function Register() {
             <div className="absolute top-0 right-0 -z-10 w-[600px] h-[600px] bg-sky-500/5 rounded-full blur-3xl -mr-80 -mt-80"></div>
             <div className="absolute bottom-0 left-0 -z-10 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl -ml-80 -mb-80"></div>
 
-            <div className="w-full max-w-[480px] bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50">
+            <div className="w-full max-w-[480px] bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50 animate-fade-in-up">
                 <div className="p-10 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/20">
+                    <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-sky-500/20">
                         <Pill className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Create Account</h1>
@@ -68,7 +68,7 @@ export default function Register() {
                         <button
                             type="button"
                             onClick={() => setRole("CUSTOMER")}
-                            className={`py-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${role === "CUSTOMER"
+                            className={`py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${role === "CUSTOMER"
                                 ? "bg-white text-sky-600 shadow-sm border border-slate-100"
                                 : "text-slate-500 hover:text-slate-700"}`}
                         >
@@ -78,7 +78,7 @@ export default function Register() {
                         <button
                             type="button"
                             onClick={() => setRole("SELLER")}
-                            className={`py-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${role === "SELLER"
+                            className={`py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${role === "SELLER"
                                 ? "bg-white text-emerald-600 shadow-sm border border-slate-100"
                                 : "text-slate-500 hover:text-slate-700"}`}
                         >
@@ -97,7 +97,7 @@ export default function Register() {
                                     placeholder="Enter your full name"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20 outline-none rounded-xl text-sm transition-all"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500/30 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none rounded-xl text-sm transition-all"
                                     required
                                 />
                             </div>
@@ -112,7 +112,7 @@ export default function Register() {
                                     placeholder="Enter your email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20 outline-none rounded-xl text-sm transition-all"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500/30 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none rounded-xl text-sm transition-all"
                                     required
                                 />
                             </div>
@@ -127,7 +127,7 @@ export default function Register() {
                                     placeholder="Enter your phone number"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20 outline-none rounded-xl text-sm transition-all"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500/30 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none rounded-xl text-sm transition-all"
                                 />
                             </div>
                         </div>
@@ -141,7 +141,7 @@ export default function Register() {
                                     placeholder="Create a password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20 outline-none rounded-xl text-sm transition-all"
+                                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-sky-500/30 focus:bg-white focus:ring-4 focus:ring-sky-500/10 outline-none rounded-xl text-sm transition-all"
                                     required
                                 />
                             </div>
@@ -152,7 +152,7 @@ export default function Register() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-3.5 bg-gradient-to-r from-sky-600 to-sky-700 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-sky-500/20 transition-all active:scale-[0.97] flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Create Account <ArrowRight className="w-4 h-4" /></>}
                     </button>

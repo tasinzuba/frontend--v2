@@ -77,7 +77,7 @@ interface Order {
 export default function SellerDashboard() {
     const { data: session, isPending: authPending } = authClient.useSession();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<"overview" | "medicines" | "orders">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "medicines" | "orders" | "analytics" | "settings">("overview");
     const [medicines, setMedicines] = useState<Medicine[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -248,13 +248,13 @@ export default function SellerDashboard() {
 
     if (authPending || !session) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-900">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-900 via-sky-800 to-sky-900">
                 <div className="text-center space-y-6">
-                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl flex items-center justify-center animate-pulse">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-sky-500 to-sky-600 rounded-3xl flex items-center justify-center animate-pulse">
                         <Store className="w-10 h-10 text-white" />
                     </div>
                     <div className="space-y-2">
-                        <Loader2 className="w-6 h-6 animate-spin text-emerald-400 mx-auto" />
+                        <Loader2 className="w-6 h-6 animate-spin text-sky-400 mx-auto" />
                         <p className="text-slate-400 text-sm font-medium">Loading seller portal...</p>
                     </div>
                 </div>
@@ -290,15 +290,15 @@ export default function SellerDashboard() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
             {/* Sidebar */}
-            <div className="fixed left-0 top-0 h-screen w-72 bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900 pt-24 pb-8 px-6 hidden lg:flex flex-col z-40">
+            <div className="fixed left-0 top-0 h-screen w-72 bg-gradient-to-b from-sky-900 via-sky-800 to-sky-900 pt-24 pb-8 px-6 hidden lg:flex flex-col z-40">
                 <div className="mb-12">
                     <div className="flex items-center gap-4 mb-2">
-                        <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                        <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-sky-500 rounded-2xl flex items-center justify-center shadow-lg shadow-sky-500/30">
                             <Store className="w-6 h-6 text-white" />
                         </div>
                         <div>
                             <h2 className="text-white font-bold text-lg tracking-tight">Seller Hub</h2>
-                            <p className="text-emerald-300/60 text-[10px] font-bold uppercase tracking-widest">Commerce Portal</p>
+                            <p className="text-sky-300/60 text-[10px] font-bold uppercase tracking-widest">Commerce Portal</p>
                         </div>
                     </div>
                 </div>
@@ -306,7 +306,7 @@ export default function SellerDashboard() {
                 {/* Profile Card */}
                 <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 mb-8 border border-white/10">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-400 flex items-center justify-center overflow-hidden">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-400 to-sky-500 flex items-center justify-center overflow-hidden">
                             {session.user.image ? (
                                 <img src={session.user.image} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -315,7 +315,7 @@ export default function SellerDashboard() {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="font-semibold text-white truncate">{session.user.name}</p>
-                            <p className="text-emerald-300/60 text-xs truncate">{session.user.email}</p>
+                            <p className="text-sky-300/60 text-xs truncate">{session.user.email}</p>
                         </div>
                     </div>
                 </div>
@@ -324,25 +324,27 @@ export default function SellerDashboard() {
                     {[
                         { id: "overview", label: "Dashboard", icon: LayoutDashboard, badge: null },
                         { id: "medicines", label: "Inventory", icon: Package, badge: medicines.length },
-                        { id: "orders", label: "Orders", icon: ShoppingBag, badge: orders.length }
+                        { id: "orders", label: "Orders", icon: ShoppingBag, badge: orders.length },
+                        { id: "analytics", label: "Analytics", icon: BarChart3, badge: null },
+                        { id: "settings", label: "Settings", icon: Settings, badge: null }
                     ].map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all duration-300 group ${activeTab === tab.id
                                 ? "bg-white/20 text-white"
-                                : "text-emerald-200/60 hover:text-white hover:bg-white/5"
+                                : "text-sky-200/60 hover:text-white hover:bg-white/5"
                                 }`}
                         >
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${activeTab === tab.id
-                                ? "bg-gradient-to-br from-emerald-400 to-teal-400 shadow-lg shadow-emerald-500/30"
+                                ? "bg-gradient-to-br from-sky-400 to-sky-500 shadow-lg shadow-sky-500/30"
                                 : "bg-white/10 group-hover:bg-white/20"
                                 }`}>
                                 <tab.icon className="w-5 h-5" />
                             </div>
                             <span className="font-semibold text-sm">{tab.label}</span>
                             {tab.badge !== null && (
-                                <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-lg ${activeTab === tab.id ? "bg-white/20 text-white" : "bg-white/10 text-emerald-300/60"
+                                <span className={`ml-auto text-[10px] font-bold px-2.5 py-1 rounded-lg ${activeTab === tab.id ? "bg-white/20 text-white" : "bg-white/10 text-sky-300/60"
                                     }`}>{tab.badge}</span>
                             )}
                         </button>
@@ -351,7 +353,7 @@ export default function SellerDashboard() {
 
                 {/* Quick Actions */}
                 <div className="space-y-2 pt-6 border-t border-white/10">
-                    <Link href="/dashboard" className="w-full px-4 py-3 rounded-xl text-left flex items-center gap-3 text-emerald-200/60 hover:text-white hover:bg-white/5 transition-all">
+                    <Link href="/dashboard" className="w-full px-4 py-3 rounded-xl text-left flex items-center gap-3 text-sky-200/60 hover:text-white hover:bg-white/5 transition-all">
                         <User className="w-5 h-5" />
                         <span className="text-sm font-medium">My Account</span>
                     </Link>
@@ -373,12 +375,14 @@ export default function SellerDashboard() {
                         {[
                             { id: "overview", label: "Dashboard", icon: LayoutDashboard },
                             { id: "medicines", label: "Inventory", icon: Package },
-                            { id: "orders", label: "Orders", icon: ShoppingBag }
+                            { id: "orders", label: "Orders", icon: ShoppingBag },
+                            { id: "analytics", label: "Analytics", icon: BarChart3 },
+                            { id: "settings", label: "Settings", icon: Settings }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === tab.id ? "bg-emerald-600 text-white shadow-md" : "text-slate-400 hover:text-slate-600"
+                                className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === tab.id ? "bg-sky-600 text-white shadow-md" : "text-slate-400 hover:text-slate-600"
                                     }`}
                             >
                                 <tab.icon className="w-3.5 h-3.5" />
@@ -393,8 +397,8 @@ export default function SellerDashboard() {
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                         <div>
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="px-4 py-1.5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-full border border-emerald-500/20">
-                                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Seller Portal</span>
+                                <div className="px-4 py-1.5 bg-gradient-to-r from-sky-500/10 to-sky-500/10 rounded-full border border-sky-500/20">
+                                    <span className="text-[10px] font-bold text-sky-600 uppercase tracking-widest">Seller Portal</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 text-emerald-500">
                                     <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
@@ -415,7 +419,7 @@ export default function SellerDashboard() {
                         {activeTab === "medicines" && (
                             <button
                                 onClick={() => { setEditingMedicine(null); setFormData({ name: "", description: "", price: "", stock: "", image: "", categoryId: "" }); setIsModalOpen(true); }}
-                                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                                className="px-6 py-3 bg-gradient-to-r from-sky-600 to-sky-700 text-white rounded-2xl font-semibold text-sm flex items-center gap-2 hover:shadow-lg hover:shadow-sky-500/20 transition-all"
                             >
                                 <Plus className="w-5 h-5" />
                                 Add Product
@@ -428,7 +432,7 @@ export default function SellerDashboard() {
                 {loading ? (
                     <div className="flex items-center justify-center py-40">
                         <div className="text-center space-y-4">
-                            <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mx-auto" />
+                            <Loader2 className="w-12 h-12 text-sky-500 animate-spin mx-auto" />
                             <p className="text-slate-400 font-medium">Loading dashboard data...</p>
                         </div>
                     </div>
@@ -439,10 +443,10 @@ export default function SellerDashboard() {
                                 {/* Stats Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                                     {[
-                                        { label: "Total Revenue", val: `৳${totalRevenue.toFixed(0)}`, icon: DollarSign, color: "from-emerald-500 to-teal-600", trend: "+12.5%", trendUp: true },
-                                        { label: "Total Orders", val: orders.length, icon: ShoppingBag, color: "from-sky-500 to-blue-600", trend: `${pendingOrders} pending`, trendUp: false },
-                                        { label: "Total Products", val: medicines.length, icon: Package, color: "from-purple-500 to-violet-600", trend: `${lowStockItems} low stock`, trendUp: false },
-                                        { label: "Inventory Value", val: `৳${totalInventoryValue.toFixed(0)}`, icon: Box, color: "from-orange-500 to-amber-600", trend: "Total worth", trendUp: false }
+                                        { label: "Total Revenue", val: `৳${totalRevenue.toFixed(0)}`, icon: DollarSign, color: "from-emerald-500 to-emerald-600", trend: "+12.5%", trendUp: true },
+                                        { label: "Total Orders", val: orders.length, icon: ShoppingBag, color: "from-sky-500 to-sky-600", trend: `${pendingOrders} pending`, trendUp: false },
+                                        { label: "Total Products", val: medicines.length, icon: Package, color: "from-sky-600 to-sky-700", trend: `${lowStockItems} low stock`, trendUp: false },
+                                        { label: "Inventory Value", val: `৳${totalInventoryValue.toFixed(0)}`, icon: Box, color: "from-slate-600 to-slate-700", trend: "Total worth", trendUp: false }
                                     ].map((stat, i) => (
                                         <div key={i} className="bg-white rounded-3xl p-6 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group relative overflow-hidden">
                                             <div className="flex items-start justify-between mb-6">
@@ -491,7 +495,7 @@ export default function SellerDashboard() {
                                                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">Recent Orders</h3>
                                                 <p className="text-slate-400 text-xs font-medium mt-1">Latest transactions</p>
                                             </div>
-                                            <button onClick={() => setActiveTab("orders")} className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700">View All</button>
+                                            <button onClick={() => setActiveTab("orders")} className="text-[10px] font-bold text-sky-600 uppercase tracking-widest hover:text-sky-700">View All</button>
                                         </div>
                                         <div className="space-y-4">
                                             {orders.slice(0, 4).map(order => (
@@ -527,7 +531,7 @@ export default function SellerDashboard() {
                                                 <h3 className="text-xl font-bold text-slate-900 tracking-tight">Low Stock Alert</h3>
                                                 <p className="text-slate-400 text-xs font-medium mt-1">Products needing restock</p>
                                             </div>
-                                            <button onClick={() => setActiveTab("medicines")} className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest hover:text-emerald-700">Manage</button>
+                                            <button onClick={() => setActiveTab("medicines")} className="text-[10px] font-bold text-sky-600 uppercase tracking-widest hover:text-sky-700">Manage</button>
                                         </div>
                                         <div className="space-y-4">
                                             {medicines.filter(m => m.stock < 20).slice(0, 4).map(med => (
@@ -570,7 +574,7 @@ export default function SellerDashboard() {
                                             </div>
                                             <div className="relative w-full lg:w-80">
                                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                                <input type="text" placeholder="Search products..." className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border-none outline-none text-sm font-medium focus:ring-2 focus:ring-emerald-500/20 transition-all" />
+                                                <input type="text" placeholder="Search products..." className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl border-none outline-none text-sm font-medium focus:ring-2 focus:ring-sky-500/20 transition-all" />
                                             </div>
                                         </div>
                                     </div>
@@ -628,7 +632,7 @@ export default function SellerDashboard() {
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <button
                                                                     onClick={() => openEditModal(med)}
-                                                                    className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 transition-all"
+                                                                    className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-sky-50 hover:text-sky-600 transition-all"
                                                                 >
                                                                     <Edit3 className="w-4 h-4" />
                                                                 </button>
@@ -650,7 +654,7 @@ export default function SellerDashboard() {
                                                 <p className="text-slate-400 font-medium">No products in inventory</p>
                                                 <button
                                                     onClick={() => { setEditingMedicine(null); setFormData({ name: "", description: "", price: "", stock: "", image: "", categoryId: "" }); setIsModalOpen(true); }}
-                                                    className="mt-4 px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors"
+                                                    className="mt-4 px-6 py-2.5 bg-sky-600 text-white rounded-xl text-sm font-semibold hover:bg-sky-700 transition-colors"
                                                 >
                                                     Add First Product
                                                 </button>
@@ -728,7 +732,7 @@ export default function SellerDashboard() {
                                                 {/* Shipping */}
                                                 <div className="lg:w-1/3">
                                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Shipping Address</p>
-                                                    <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-5 rounded-2xl text-white">
+                                                    <div className="bg-gradient-to-br from-sky-600 to-sky-700 p-5 rounded-2xl text-white">
                                                         <div className="flex gap-3">
                                                             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
                                                                 <MapPin className="w-5 h-5" />
@@ -748,6 +752,114 @@ export default function SellerDashboard() {
                                         <p className="text-slate-400">Orders will appear here when customers purchase your products</p>
                                     </div>
                                 )}
+                            </div>
+                        )}
+
+                        {activeTab === "analytics" && (
+                            <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-6">
+                                <div className="grid lg:grid-cols-2 gap-6">
+                                    <div className="bg-white rounded-3xl border border-slate-100 p-6">
+                                        <h3 className="text-lg font-bold text-slate-900 mb-1">Revenue Overview</h3>
+                                        <p className="text-sm text-slate-400 mb-6">Monthly revenue from your products</p>
+                                        <div className="space-y-4">
+                                            {["Jan", "Feb", "Mar", "Apr", "May", "Jun"].map((month, i) => (
+                                                <div key={month} className="flex items-center gap-4">
+                                                    <span className="text-sm font-medium text-slate-500 w-8">{month}</span>
+                                                    <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden">
+                                                        <div className="bg-gradient-to-r from-sky-500 to-sky-600 h-full rounded-full" style={{ width: `${(i + 1) * 15 + 10}%` }}></div>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-slate-900 w-20 text-right">৳{((i + 1) * 800 + 200).toLocaleString()}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white rounded-3xl border border-slate-100 p-6">
+                                        <h3 className="text-lg font-bold text-slate-900 mb-1">Product Performance</h3>
+                                        <p className="text-sm text-slate-400 mb-6">Top selling products this month</p>
+                                        <div className="space-y-3">
+                                            {medicines.slice(0, 5).map((med, i) => (
+                                                <div key={med.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-all">
+                                                    <span className="text-lg font-bold text-slate-300 w-6">#{i + 1}</span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-semibold text-sm text-slate-900 truncate">{med.name}</p>
+                                                        <p className="text-xs text-slate-400">{med.stock} in stock</p>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-emerald-600">৳{med.price}</span>
+                                                </div>
+                                            ))}
+                                            {medicines.length === 0 && <p className="text-center text-slate-400 py-8">No products yet</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white rounded-3xl border border-slate-100 p-6">
+                                    <h3 className="text-lg font-bold text-slate-900 mb-1">Inventory Summary</h3>
+                                    <p className="text-sm text-slate-400 mb-6">Stock levels across your products</p>
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="bg-sky-50 rounded-2xl p-5 border border-sky-100 text-center">
+                                            <p className="text-3xl font-bold text-slate-900">{medicines.length}</p>
+                                            <p className="text-xs font-bold text-sky-600 uppercase tracking-widest mt-1">Total Products</p>
+                                        </div>
+                                        <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 text-center">
+                                            <p className="text-3xl font-bold text-slate-900">{medicines.filter(m => m.isActive).length}</p>
+                                            <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-1">Active</p>
+                                        </div>
+                                        <div className="bg-red-50 rounded-2xl p-5 border border-red-100 text-center">
+                                            <p className="text-3xl font-bold text-slate-900">{lowStockItems}</p>
+                                            <p className="text-xs font-bold text-red-600 uppercase tracking-widest mt-1">Low Stock</p>
+                                        </div>
+                                        <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 text-center">
+                                            <p className="text-3xl font-bold text-slate-900">৳{totalInventoryValue.toLocaleString()}</p>
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Inventory Value</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "settings" && (
+                            <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-6">
+                                <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
+                                    <div className="p-8 border-b border-slate-100">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-1">Store Information</h3>
+                                        <p className="text-slate-500 text-sm">Manage your seller profile and store details</p>
+                                    </div>
+                                    <div className="p-8">
+                                        <div className="flex items-center gap-6 mb-8">
+                                            <div className="w-20 h-20 bg-gradient-to-br from-sky-500 to-sky-600 rounded-3xl flex items-center justify-center shadow-lg overflow-hidden">
+                                                {session.user.image ? (
+                                                    <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Store className="w-10 h-10 text-white" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xl font-bold text-slate-900 mb-1">{session.user.name}</h4>
+                                                <p className="text-slate-500 text-sm">{session.user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="text-sm font-semibold text-slate-700 mb-2 block">Store Name</label>
+                                                <input type="text" defaultValue={session.user.name || ""} className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500/30 text-sm font-medium" />
+                                            </div>
+                                            <div>
+                                                <label className="text-sm font-semibold text-slate-700 mb-2 block">Email Address</label>
+                                                <input type="email" defaultValue={session.user.email || ""} className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none text-sm font-medium" disabled />
+                                            </div>
+                                            <div>
+                                                <label className="text-sm font-semibold text-slate-700 mb-2 block">Phone Number</label>
+                                                <input type="tel" placeholder="Add phone number" className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500/30 text-sm font-medium" />
+                                            </div>
+                                            <div>
+                                                <label className="text-sm font-semibold text-slate-700 mb-2 block">Store Address</label>
+                                                <input type="text" placeholder="Enter store address" className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500/30 text-sm font-medium" />
+                                            </div>
+                                        </div>
+                                        <button className="mt-8 px-8 py-4 bg-sky-600 text-white rounded-xl font-semibold hover:bg-sky-700 transition-all">
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </>
@@ -774,7 +886,7 @@ export default function SellerDashboard() {
                                     <input
                                         type="text"
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-medium transition-all"
                                         placeholder="e.g. Paracetamol 500mg"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -784,7 +896,7 @@ export default function SellerDashboard() {
                                     <label className="text-sm font-semibold text-slate-700">Category</label>
                                     <select
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-medium transition-all"
                                         value={formData.categoryId}
                                         onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                                     >
@@ -800,7 +912,7 @@ export default function SellerDashboard() {
                                 <label className="text-sm font-semibold text-slate-700">Description</label>
                                 <textarea
                                     required
-                                    className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium min-h-[100px] resize-none transition-all"
+                                    className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-medium min-h-[100px] resize-none transition-all"
                                     placeholder="Enter product description..."
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -814,7 +926,7 @@ export default function SellerDashboard() {
                                         type="number"
                                         step="0.01"
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-medium transition-all"
                                         placeholder="0.00"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
@@ -825,7 +937,7 @@ export default function SellerDashboard() {
                                     <input
                                         type="number"
                                         required
-                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none text-sm font-medium transition-all"
+                                        className="w-full px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none text-sm font-medium transition-all"
                                         placeholder="0"
                                         value={formData.stock}
                                         onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
@@ -853,7 +965,7 @@ export default function SellerDashboard() {
                                 <button
                                     type="submit"
                                     disabled={formLoading}
-                                    className="flex-[2] py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                                    className="flex-[2] py-4 bg-gradient-to-r from-sky-600 to-sky-700 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-sky-500/20 transition-all flex items-center justify-center gap-2"
                                 >
                                     {formLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {editingMedicine ? "Save Changes" : "Create Product"}
