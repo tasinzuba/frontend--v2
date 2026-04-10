@@ -200,7 +200,7 @@ function LoginForm() {
                             onClick={() => {
                                 authClient.signIn.social({
                                     provider: "google",
-                                    callbackURL: "/",
+                                    callbackURL: window.location.origin,
                                 });
                             }}
                             className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:shadow-md transition-all duration-300 active:scale-[0.97]"
