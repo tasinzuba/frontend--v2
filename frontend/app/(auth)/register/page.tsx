@@ -4,14 +4,14 @@ import { useState } from "react";
 import { authClient } from "@/app/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, Phone, UserCircle, ArrowRight, Loader2, Pill, Store } from "lucide-react";
+import { User, Mail, Lock, Phone, UserCircle, ArrowRight, Loader2, Pill, Store, ClipboardList, Stethoscope } from "lucide-react";
 
 export default function Register() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [phone, setPhone] = useState("");
-    const [role, setRole] = useState<"CUSTOMER" | "SELLER">("CUSTOMER");
+    const [role, setRole] = useState<"CUSTOMER" | "SELLER" | "MANAGER" | "PHARMACIST">("CUSTOMER");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
@@ -64,27 +64,25 @@ export default function Register() {
                     )}
 
                     {/* Role Selection */}
-                    <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-50 rounded-xl border border-slate-100">
-                        <button
-                            type="button"
-                            onClick={() => setRole("CUSTOMER")}
-                            className={`py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${role === "CUSTOMER"
-                                ? "bg-white text-sky-600 shadow-sm border border-slate-100"
-                                : "text-slate-500 hover:text-slate-700"}`}
-                        >
-                            <User className="w-4 h-4" />
-                            Customer
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setRole("SELLER")}
-                            className={`py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${role === "SELLER"
-                                ? "bg-white text-emerald-600 shadow-sm border border-slate-100"
-                                : "text-slate-500 hover:text-slate-700"}`}
-                        >
-                            <Store className="w-4 h-4" />
-                            Seller
-                        </button>
+                    <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-50 rounded-xl border border-slate-100">
+                        {[
+                            { id: "CUSTOMER" as const, label: "Customer", icon: User },
+                            { id: "SELLER" as const, label: "Seller", icon: Store },
+                            { id: "MANAGER" as const, label: "Manager", icon: ClipboardList },
+                            { id: "PHARMACIST" as const, label: "Pharmacist", icon: Stethoscope },
+                        ].map((r) => (
+                            <button
+                                key={r.id}
+                                type="button"
+                                onClick={() => setRole(r.id)}
+                                className={`py-3 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${role === r.id
+                                    ? "bg-white text-sky-600 shadow-sm border border-slate-100"
+                                    : "text-slate-500 hover:text-slate-700"}`}
+                            >
+                                <r.icon className="w-4 h-4" />
+                                {r.label}
+                            </button>
+                        ))}
                     </div>
 
                     <div className="space-y-4">

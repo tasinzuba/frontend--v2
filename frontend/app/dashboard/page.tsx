@@ -216,6 +216,32 @@ export default function DashboardPage() {
                         </Link>
                     )}
 
+                    {(session?.user as any).role === "MANAGER" && (
+                        <Link
+                            href="/dashboard/manager"
+                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-sky-600 hover:bg-sky-50"
+                        >
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-sky-100">
+                                <LayoutDashboard className="w-5 h-5" />
+                            </div>
+                            <span className="font-semibold text-sm">Manager Dashboard</span>
+                            <ChevronRight className="w-5 h-5 ml-auto" />
+                        </Link>
+                    )}
+
+                    {(session?.user as any).role === "PHARMACIST" && (
+                        <Link
+                            href="/dashboard/pharmacist"
+                            className="w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all text-sky-600 hover:bg-sky-50"
+                        >
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-sky-100">
+                                <LayoutDashboard className="w-5 h-5" />
+                            </div>
+                            <span className="font-semibold text-sm">Pharmacist Dashboard</span>
+                            <ChevronRight className="w-5 h-5 ml-auto" />
+                        </Link>
+                    )}
+
                     {(session?.user as any).role === "ADMIN" && (
                         <Link
                             href="/dashboard/admin"
